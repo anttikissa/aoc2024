@@ -18,7 +18,7 @@ for (let n of rights) {
 	}
 }
 
-log('counts', counts)
+// log('counts', counts)
 
 let total = 0
 for (let i = 0; i < lefts.length; i++) {

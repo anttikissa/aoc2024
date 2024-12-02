@@ -3,16 +3,15 @@ import fs from 'fs'
 let log = console.log
 
 let file = fs.readFileSync('day2.txt', 'utf8')
-// file = fs.readFileSync('day2-test.txt', 'utf8')
 let lines = file.split('\n').filter(Boolean)
 let reports = lines.map((line) => line.split(' ').map(Number))
 
+function range(n: number) {
+	return Array(n).fill(0).map((_, i) => i)
+}
+
 function adjacents(arr: number[]) {
-	let result = []
-	for (let i = 0; i < arr.length - 1; i++) {
-		result.push([arr[i], arr[i + 1]])
-	}
-	return result
+	return range(arr.length - 1).map(i => [arr[i], arr[i + 1]])
 }
 
 function between(n: number, min: number, max: number) {
@@ -20,13 +19,7 @@ function between(n: number, min: number, max: number) {
 }
 
 function removeds(arr: number[]): number[][] {
-	let result = []
-
-	for (let i = 0; i <= arr.length - 1; i++) {
-		result.push(arr.toSpliced(i, 1))
-	}
-
-	return result
+	return range(arr.length).map(i => arr.toSpliced(i, 1))
 }
 
 function safe(report: number[]) {
@@ -40,17 +33,5 @@ function safe(report: number[]) {
 	return (increasing || decreasing) && diffsOk
 }
 
-let result = 0
-
-for (let report of reports) {
-	if (safe(report)) {
-		result++
-	} else {
-		let possibleReports = removeds(report)
-		if (possibleReports.some(safe)) {
-			result++
-		}
-	}
-}
-
-log('total', result)
+let safes = reports.filter(report => safe(report) || removeds(report).some(safe))
+log('Total', safes.length)
