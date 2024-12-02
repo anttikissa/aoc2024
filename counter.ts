@@ -10,7 +10,7 @@ let log = console.log
 let start = Date.now()
 log(new Date(start).toISOString().replace('T', ' ').replace('Z', ''))
 
-log('Started; press enter when done')
+log('You can start reading the description now. Press enter when passed')
 
 function pad2(n: number) {
 	return n < 10 ? `0${n}` : n
