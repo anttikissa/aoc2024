@@ -1,14 +1,8 @@
-import fs from 'fs'
+import { range, readLines, toNumbers } from './utils.ts'
 
 let log = console.log
 
-let file = fs.readFileSync('day2.txt', 'utf8')
-let lines = file.split('\n').filter(Boolean)
-let reports = lines.map((line) => line.split(' ').map(Number))
-
-function range(n: number) {
-	return Array(n).fill(0).map((_, i) => i)
-}
+let reports = readLines('day2.txt').map(toNumbers)
 
 function adjacents(arr: number[]) {
 	return range(arr.length - 1).map(i => [arr[i], arr[i + 1]])
@@ -34,4 +28,4 @@ function safe(report: number[]) {
 }
 
 let safes = reports.filter(report => safe(report) || removeds(report).some(safe))
-log('Total', safes.length)
+log('total', safes.length)
