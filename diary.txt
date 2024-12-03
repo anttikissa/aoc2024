@@ -6,9 +6,12 @@ Day 1
 Day 2:
 
 1: Total time: 0:09:56
-2: Total time: 0:24:11
+2: Total time: 0:24:11 (had off-by-one error in removeds)
 
 Day 3:
 
 1: Total time: 0:06:30
-2: Total time: 0:02:44 (A bit cheating, forgot to start it)
+2: Total time: 0:02:44 (plus maybe 2 minutes, cheated a bit)
+
+Day 4:
+
