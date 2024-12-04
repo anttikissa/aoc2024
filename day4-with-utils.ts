@@ -2,9 +2,9 @@ import {
 	coords,
 	diagonalDirections,
 	directions,
-	get,
-	mul,
-	plus,
+	gridGet,
+	mulVec,
+	addVec,
 	range,
 	readFile,
 	toGrid,
@@ -32,10 +32,10 @@ MXMXAXMASX`
 let result1 = 0
 
 for (let coord of coords(grid)) {
-	if (get(grid, coord) === 'X') {
+	if (gridGet(grid, coord) === 'X') {
 		for (let direction of directions) {
 			let letters = range(1, 3).map((i) =>
-				get(grid, plus(coord, mul(direction, i)))
+				gridGet(grid, addVec(coord, mulVec(direction, i)))
 			)
 			if (letters.join('') === 'MAS') {
 				result1++
@@ -51,8 +51,8 @@ let result2 = 0
 let validCombinations = ['MMSS', 'SMMS', 'MSSM', 'SSMM']
 
 for (let coord of coords(grid)) {
-	if (get(grid, coord) === 'A') {
-		let rest = diagonalDirections.map((dir) => get(grid, plus(coord, dir)))
+	if (gridGet(grid, coord) === 'A') {
+		let rest = diagonalDirections.map((dir) => gridGet(grid, addVec(coord, dir)))
 		if (validCombinations.includes(rest.join(''))) {
 			result2++
 		}

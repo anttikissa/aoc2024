@@ -77,14 +77,14 @@ export function *coords(hOrGrid: number | unknown[][], w?: number) {
 	}
 }
 
-export function plus([a, b]: Vec2, [c, d]: Vec2): Vec2 {
+export function addVec([a, b]: Vec2, [c, d]: Vec2): Vec2 {
 	return [a + c, b + d]
 }
 
-export function mul([a, b]: Vec2, x: number): Vec2 {
+export function mulVec([a, b]: Vec2, x: number): Vec2 {
 	return [a * x, b * x]
 }
 
-export function get(grid: string[][], [y, x]: Vec2) {
+export function gridGet(grid: string[][], [y, x]: Vec2) {
 	return grid[y]?.[x] || '.'
 }
