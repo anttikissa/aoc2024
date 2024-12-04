@@ -49,18 +49,14 @@ function advance([x, y]: number[], dir: number[], n: number) {
 }
 
 function check(i: number, j: number) {
-	// log('check A at', [i, j])
 	let pos = [i, j]
 	let chars = diagonals.map(diag => get(advance(pos, diag, 1)))
-	// log('check chars', chars)
 	if (validCombos.includes(chars.join(''))) {
-		// log('match!')
 		return 1
 	}
 	return 0
 }
 
-// log('h', h, 'w', w)
 let result = 0
 
 for (let i = 0; i < w; i++) {
