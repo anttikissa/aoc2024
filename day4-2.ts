@@ -6,39 +6,34 @@ let lines: string[][] = readLines('day4.txt').map((line) =>
 )
 
 let test = `
-MMMSXXMASM
-MSAMXMSMSA
-AMXSXMAAMM
-MSAMASMSMX
-XMASAMXAMM
-XXAMMXXAMA
-SMSMSASXSS
-SAXAMASAAA
-MAMMMXMMMM
-MXMXAXMASX`
-
-// test = `
-// ......
-// ..X...
-// .SAMX.
-// .A..A.
-// XMAS.S
-// .X....`
+.M.S......
+..A..MSMS.
+.M.S.MAA..
+..A.ASMSM.
+.M.S.M....
+..........
+S.S.S.S.S.
+.A.A.A.A..
+M.M.M.M.M.
+..........`
 
 // lines = test.trim().split('\n').map(x => x.trim()).map(x => x.split(''))
 
 let h = lines.length
 let w = lines[0]?.length || 0
 
-let directions = [
-	[0, 1],
-	[1, 0],
-	[0, -1],
-	[-1, 0],
+let diagonals = [
 	[1, 1],
+	[-1, -1],
 	[1, -1],
 	[-1, 1],
-	[-1, -1]
+]
+
+let validCombos = [
+	'MSMS',
+	'MSSM',
+	'SMMS',
+	'SMSM',
 ]
 
 function get([x, y]: number[]) {
@@ -54,16 +49,15 @@ function advance([x, y]: number[], dir: number[], n: number) {
 }
 
 function check(i: number, j: number) {
-	let count = 0
+	// log('check A at', [i, j])
 	let pos = [i, j]
-	for (let dir of directions) {
-		if (get(advance(pos, dir, 1)) === 'M'
-			&& get(advance(pos, dir, 2)) === 'A'
-			&& get(advance(pos, dir, 3)) === 'S') {
-			count++
-		}
+	let chars = diagonals.map(diag => get(advance(pos, diag, 1)))
+	// log('check chars', chars)
+	if (validCombos.includes(chars.join(''))) {
+		// log('match!')
+		return 1
 	}
-	return count
+	return 0
 }
 
 // log('h', h, 'w', w)
@@ -71,7 +65,7 @@ let result = 0
 
 for (let i = 0; i < w; i++) {
 	for (let j = 0; j < h; j++) {
-		if (lines[i][j] === 'X') {
+		if (lines[i][j] === 'A') {
 			result += check(i, j)
 		}
 	}
