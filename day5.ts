@@ -68,10 +68,31 @@ function isCorrect(order: number[]) {
 }
 
 let corrects = pages.filter(isCorrect)
+let incorrects = pages.filter(x => !isCorrect(x))
 
 let middles = corrects.map((page) => page[(page.length / 2) | 0])
 
 // log('middles', middles)
 
-let result = middles.reduce((a, b) => a + b, 0)
-log('result', result)
+let result1 = middles.reduce((a, b) => a + b, 0)
+log('part 1', result1)
+
+function pageOrdering(a: number, b: number) {
+	if (correctPairs.has(`${a}|${b}`)) {
+		return -1
+	} else {
+		return 1
+	}
+}
+
+log('correct', correctPairs)
+
+let sorted = incorrects.map(page => page.sort(pageOrdering))
+log('sorted', sorted)
+
+let middles2 = sorted.map((page) => page[(page.length / 2) | 0])
+log('middles2')
+
+let result2 = middles2.reduce((a, b) => a + b, 0)
+log('part 2', result2)
+
