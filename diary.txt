@@ -17,3 +17,8 @@ Day 4:
 
 1: Total time: 0:46:00 (wrong approach)
 2: Total time: 0:08:06
+
+Day 5:
+
+1: Total time: 0:11:17
+2:

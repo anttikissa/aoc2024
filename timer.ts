@@ -33,7 +33,7 @@ readline.on('line', () => {
 
 	let h = time | 0
 
-	log({ h, min, s, ms })
+//	log({ h, min, s, ms })
 
 	log(`Total time: ${h}:${pad2(min)}:${pad2(s)}`)
 
