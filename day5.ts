@@ -1,6 +1,6 @@
 // Part 1
 
-import { readFile, toLines } from './utils.ts'
+import { pairs, readFile, toLines } from './utils.ts'
 
 let log = console.log
 
@@ -40,44 +40,31 @@ if (0) {
 
 let [first, second] = input.split('\n\n').map(toLines)
 
-// let orders = first.map(line => line.split('|').map(Number))
 let pages = second.map((line) => line.split(',').map(Number))
 
-// log('first', { orders, pages })
-
 let correctPairs = new Set(first)
-
-function pairs(arr: number[]) {
-	let result = []
-	for (let i = 0; i < arr.length; i++) {
-		for (let j = i + 1; j < arr.length; j++) {
-			result.push([arr[i], arr[j]])
-		}
-	}
-	return result
-}
 
 function isCorrectPair([a, b]: number[]) {
 	return correctPairs.has(`${a}|${b}`)
 }
 
 function isCorrect(order: number[]) {
-	if (pairs(order).every(isCorrectPair)) {
-		return true
-	}
+	return pairs(order).every(isCorrectPair)
 }
 
+// Part 1
+
 let corrects = pages.filter(isCorrect)
-let incorrects = pages.filter(x => !isCorrect(x))
+let incorrects = pages.filter((x) => !isCorrect(x))
 
 let middles = corrects.map((page) => page[(page.length / 2) | 0])
-
-// log('middles', middles)
 
 let result1 = middles.reduce((a, b) => a + b, 0)
 log('part 1', result1)
 
-function pageOrdering(a: number, b: number) {
+// Part 2
+
+function comparator(a: number, b: number) {
 	if (correctPairs.has(`${a}|${b}`)) {
 		return -1
 	} else {
@@ -85,14 +72,7 @@ function pageOrdering(a: number, b: number) {
 	}
 }
 
-log('correct', correctPairs)
-
-let sorted = incorrects.map(page => page.sort(pageOrdering))
-log('sorted', sorted)
-
+let sorted = incorrects.map((page) => page.sort(comparator))
 let middles2 = sorted.map((page) => page[(page.length / 2) | 0])
-log('middles2')
-
 let result2 = middles2.reduce((a, b) => a + b, 0)
 log('part 2', result2)
-

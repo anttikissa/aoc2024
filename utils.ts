@@ -1,5 +1,13 @@
 import fs from 'fs'
 
+export function log(...args: unknown[]) {
+	console.log(...args)
+}
+
+//
+// Reading and parsing
+//
+
 export function readFile(path: string) {
 	return fs.readFileSync(path, 'utf8')
 }
@@ -13,12 +21,19 @@ export function toLines(file: string) {
 }
 
 export function toGrid(map: string) {
-	return map.trim().split('\n').map((line) => line.trim().split(''))
+	return map
+		.trim()
+		.split('\n')
+		.map((line) => line.trim().split(''))
 }
 
 export function toNumbers(line: string) {
 	return line.split(/\s+/).map(Number)
 }
+
+//
+// Iterating and generating
+//
 
 // range(3) => [0, 1, 2] ("range of 3 elements")
 // range(1, 3) => [1, 2, 3] ("range of 1 to 4 inclusive")
@@ -38,6 +53,25 @@ export function range(n: number, max?: number) {
 	}
 }
 
+// pairs([1, 2, 3]) =>
+//   [[1, 2], [1, 3], [1, 4],
+//            [2, 3], [2, 4],
+//                    [3, 4]]
+
+export function pairs(arr: number[]) {
+	let result = []
+	for (let i = 0; i < arr.length; i++) {
+		for (let j = i + 1; j < arr.length; j++) {
+			result.push([arr[i], arr[j]])
+		}
+	}
+	return result
+}
+
+//
+// Vectors, directions, grids
+//
+
 export type Vec2 = [number, number]
 
 export const straightDirections: Vec2[] = [
@@ -54,14 +88,11 @@ export const diagonalDirections: Vec2[] = [
 	[-1, 1],
 ]
 
-export const directions: Vec2[] = [
-	...straightDirections,
-	...diagonalDirections,
-]
+export const directions: Vec2[] = [...straightDirections, ...diagonalDirections]
 
 export function coords(grid: unknown[][]): Generator<Vec2, void, unknown>
 export function coords(h: number, w: number): Generator<Vec2, void, unknown>
-export function *coords(hOrGrid: number | unknown[][], w?: number) {
+export function* coords(hOrGrid: number | unknown[][], w?: number) {
 	if (typeof hOrGrid !== 'number') {
 		w = hOrGrid[0]?.length ?? 0
 		hOrGrid = hOrGrid.length
