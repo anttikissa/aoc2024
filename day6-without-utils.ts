@@ -141,9 +141,8 @@ while (true) {
 	}
 }
 
-log('part 1', new Set(visitedCells).size)
-
 let visitedInPart1 = [...new Set(visitedCells)]
+log('part 1', visitedInPart1.length)
 
 let loops = 0
 
