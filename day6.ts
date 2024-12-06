@@ -131,7 +131,7 @@ function copyGrid(grid: string[][]) {
 	return grid.map((row) => row.slice())
 }
 
-function placeObstruction(grid: string[][], pos) {
+function placeObstruction(grid: string[][], pos: Vec2) {
 	gridSet(grid, pos, 'O')
 }
 
