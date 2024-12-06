@@ -38,7 +38,7 @@ let origGuardPos = coords(origGrid).find(([x, y]) => origGrid[y][x] === '^')!
 
 let guardPos = origGuardPos
 
-log('guardPos', guardPos)
+// log('guardPos', guardPos)
 
 let dirs: Vec2[] = [
 	[0, -1],
@@ -80,54 +80,45 @@ function checkPreviousDir(pos: string, dir: Vec2) {
 }
 
 function step(grid: string[][]) {
+	// Mark X as "we've been here"
 	gridSet(grid, guardPos, 'X')
+	// Record the direction we're been here in
 	addPreviousDir(guardPos.join(','), dirs[currentDir])
 
 	let nextPos = addVec(guardPos, dirs[currentDir])
+
 	if (!gridIsWithin(nextPos, grid)) {
-		// log('went outside', { nextPos })
+		// Next pos out of bounds -> quit
 		return true
 	}
 
 	if (gridGet(grid, nextPos).match(/[#O]/)) {
-		// log('turn at', { guardPos, currentDir })
+		// Next pos blocked -> turn
 		currentDir = (currentDir + 1) % 4
 	} else {
-		// log('advance to', { nextPos })
+		// We can advance - do it
 		guardPos = nextPos
 
+		// If we were here before in the same direction, we have a loop
 		if (gridGet(grid, guardPos) === 'X') {
-			let prevDir = previousDirs.get(guardPos.join(','))
-			if (prevDir) {
-				// log('we been here', { guardPos, prevDir, currDir: dirs[currentDir] })
-				if (guardPos.join(',') === '21,46') {
-					gridSet(grid, guardPos, guards[currentDir])
-
-					// log('grid at DEBUGPOS:\n' + printGrid(grid))
-					// log('')
-					// process.exit(0)
-				}
-			}
 			if (checkPreviousDir(guardPos.join(','), dirs[currentDir])) {
-				// log('loop at', guardPos)
-				// we've been here before in the same direction
 				return 'loop'
 			}
 		}
-
 	}
 	return false
 }
 
+let part1Grid = copyGrid(origGrid)
 
 let finished: boolean | 'loop' = false
 while (!finished) {
-	finished = step(origGrid)
+	finished = step(part1Grid)
 }
 
 let result = 0
-for (let coord of coords(origGrid)) {
-	if (gridGet(origGrid, coord) === 'X') {
+for (let coord of coords(part1Grid)) {
+	if (gridGet(part1Grid, coord) === 'X') {
 		result++
 	}
 }
@@ -157,15 +148,16 @@ function checkLoop(grid: string[][]) {
 }
 
 let result2 = 0
-// for (let coord of [[11,45]]) {
 for (let coord of coords(origGrid)) {
-	log('check coord', coord)
+	if (gridGet(part1Grid, coord) !== 'X') {
+		continue
+	}
 
 	let copy = copyGrid(origGrid)
 	placeObstruction(copy, coord)
 
 	if (checkLoop(copy)) {
-		log('loop at', coord)
+		// log('loop at', coord)
 		result2++
 	}
 }
