@@ -18,18 +18,24 @@ if (0)
 const cellTypeEmpty = 0
 const cellTypeOccupied = 1
 
-// High 4 bits contain the visited status
-const cellStatusVisited = 0x10
+// High 4 bits contain the bitwise OR of the followed statuses:
+// 0b00010000: visited while going up
+// 0b00100000: visited while going right
+// 0b01000000: visited while going down
+// 0b10000000: visited while going left
 
 const width = input.indexOf('\n')
 const height = input.length / (width + 1) // should be integer
 const map = new Uint8Array(width * height)
+let guardInitialPos = 0 // Index in buf
 let guardPos = 0 // Index in buf
 let guardDir = 0 // 0: up, 1: right, 2: down, 3: left
+// Record all cells visited
+let visitedCells: number[] = []
 
 for (let i = 0, mapPos = 0; i < input.length; i++) {
 	if (input[i] === '^') {
-		guardPos = mapPos
+		guardPos = guardInitialPos = mapPos
 	}
 	if (input[i] === '\n') {
 		continue
@@ -37,40 +43,57 @@ for (let i = 0, mapPos = 0; i < input.length; i++) {
 	map[mapPos++] = input[i] === '#' ? cellTypeOccupied : cellTypeEmpty
 }
 
-function toXY(pos: number) {
-	let x = pos % width
-	let y = (pos / width) | 0
-	return { x, y }
-}
+// function toXY(pos: number) {
+// 	let x = pos % width
+// 	let y = (pos / width) | 0
+// 	return { x, y }
+// }
+//
+// function print(buf: Uint8Array, guardPos: number, guardDir: number, extraObstacle?: number) {
+// 	let result = ''
+// 	for (let i = 0; i < buf.length; i++) {
+// 		if (i === extraObstacle) {
+// 			result += 'O'
+// 			continue
+// 		}
+// 		if (i === guardPos) {
+// 			result += '^>v<'[guardDir]
+// 		} else {
+// 			let low = buf[i] & 0x0f
+// 			let high = buf[i] & 0xf0
+// 			if (low === cellTypeOccupied) {
+// 				result += '#'
+// 			} else {
+// 				let wentUpOrDown = high & 0b10100000
+// 				let wentLeftOrRight = high & 0b01010000
+// 				if (wentUpOrDown && wentLeftOrRight) {
+// 					result += '+'
+// 				} else if (wentUpOrDown) {
+// 					result += '-'
+// 				} else if (wentLeftOrRight) {
+// 					result += '|'
+// 				} else {
+// 					result += '.'
+// 				}
+// 			}
+// 		}
+// 		if (i % width! === width! - 1) result += '\n'
+// 	}
+// 	return result
+// }
 
-function print(buf: Uint8Array, guardPos: number, guardDir: number) {
-	let result = ''
-	for (let i = 0; i < buf.length; i++) {
-		if (i === guardPos) {
-			result += '^>v<'[guardDir]
-		} else {
-			let low = buf[i] & 0x0f
-			let high = buf[i] & 0xf0
-			if (low === cellTypeOccupied) {
-				result += '#'
-			} else {
-				if (high === cellStatusVisited) {
-					result += 'X'
-				} else {
-					result += '.'
-				}
-			}
-		}
-		if (i % width! === width! - 1) result += '\n'
+// log('buf', { width, height }, 'map:\n' + print(map, guardPos, guardDir))
+
+// Return 1 if we went outside the map, 2 if we found a loop, 0 otherwise
+function step(extraObstacle?: number): number {
+	// We were here before, in this same direction
+	if (map[guardPos] & (0x10 << guardDir)) {
+		return 2
 	}
-	return result
-}
 
-log('buf', { width, height }, 'map:\n' + print(map, guardPos, guardDir))
-
-function step(): number {
 	// Mark cell as visited
-	map[guardPos] |= 0x10
+	map[guardPos] |= 0x10 << guardDir
+	visitedCells.push(guardPos)
 
 	let nextPos!: number,
 		out = false
@@ -98,8 +121,8 @@ function step(): number {
 		return 1
 	}
 
-	// If next cell is occupied...
-	if ((map[nextPos] & 0x0f) === cellTypeOccupied) {
+	// If the next cell is occupied...
+	if ((map[nextPos] & 0x0f) === cellTypeOccupied || nextPos === extraObstacle) {
 		// Turn right
 		guardDir = (guardDir + 1) % 4
 	} else {
@@ -112,9 +135,37 @@ function step(): number {
 // Part 1
 while (true) {
 	let finished = step()
-	if (finished) break
+	if (finished) {
+		// log('after finishing, map\n' + print(map, guardPos, guardDir))
+		break
+	}
 }
 
-let visitedCells = map.reduce((acc, cell) => acc + (cell & 0xf0 ? 1 : 0), 0)
-log('part 1', visitedCells)
+log('part 1', new Set(visitedCells).size)
 
+let visitedInPart1 = [...new Set(visitedCells)]
+
+let loops = 0
+
+for (let extraObstacle of visitedInPart1) {
+	guardPos = guardInitialPos
+	guardDir = 0
+	for (let cell of visitedCells) {
+		map[cell] &= 0x0f
+	}
+	visitedCells = []
+
+	while (true) {
+		let finished = step(extraObstacle)
+		if (finished) {
+			// log('finished', finished)
+			loops += finished === 2 ? 1 : 0
+			// if (finished === 2) {
+			// 	log('after finishing, map\n' + print(map, guardPos, guardDir, extraObstacle))
+			// }
+			break
+		}
+	}
+}
+
+log('part 2', loops)
