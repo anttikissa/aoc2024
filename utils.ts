@@ -116,6 +116,14 @@ export function mulVec([a, b]: Vec2, x: number): Vec2 {
 	return [a * x, b * x]
 }
 
-export function gridGet(grid: string[][], [y, x]: Vec2) {
+export function gridGet(grid: string[][], [x, y]: Vec2) {
 	return grid[y]?.[x] || '.'
+}
+
+export function gridSet(grid: string[][], [x, y]: Vec2, value: string) {
+	grid[y][x] = value
+}
+
+export function gridIsWithin([y, x]: Vec2, grid: string[][]) {
+	return y >= 0 && y < grid.length && x >= 0 && x < grid[0].length
 }
