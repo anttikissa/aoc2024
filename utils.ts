@@ -1,7 +1,21 @@
 import fs from 'fs'
 
 export function log(...args: unknown[]) {
-	console.log(...args)
+	let result = []
+
+	for (let arg of args) {
+		if (typeof arg === 'object') {
+			result.push(JSON.stringify(arg))
+		} else if (typeof arg === 'string') {
+			result.push(arg)
+		} else if (typeof arg === 'number') {
+			result.push(arg.toString())
+		} else {
+			result.push(String(arg))
+		}
+	}
+
+	console.log(result.join(' '))
 }
 
 //
