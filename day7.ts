@@ -49,7 +49,10 @@ for (let line of lines) {
 
 log('part 1', result)
 
-let concat = (a: number, b: number) => Number(String(a) + String(b))
+let concat = (a: number, b: number) => {
+	let bLength = Math.log10(b) + 1 | 0
+	return a * (10 ** bLength) + b
+}
 
 // Part 1
 function solve2(line: string) {
