@@ -56,15 +56,15 @@ function solve2(line: string) {
 	let [result, rest] = line.split(': ')
 	let nums = rest.split(' ')
 	let operators = nums.length - 1
-	for (let i = 0; i < 2 ** operators; i++) {
+	for (let i = 0; i < 3 ** operators; i++) {
 		let acc = Number(nums[0])
-		// log('check operators', line, i.toString(2))
 		let num = i
+		// log('check operators', line, num.toString(3))
 		for (let j = 0; j < operators; j++) {
-			let rem = num % 2
-			num = num / 2 | 0
+			let rem = num % 3
+			num = num / 3 | 0
 
-			let operator = rem === 0 ? add : mul
+			let operator = rem === 0 ? add : rem === 1 ? mul : concat
 			acc = operator(acc, Number(nums[j + 1]))
 		}
 		// log('result', acc)
@@ -78,7 +78,7 @@ function solve2(line: string) {
 
 let result2 = 0
 for (let line of lines) {
-	result2 += solve(line)
+	result2 += solve2(line)
 }
 
 log('part 2', result2)
