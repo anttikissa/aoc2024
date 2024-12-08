@@ -57,9 +57,9 @@ function print(printAntis: boolean) {
 let antennas = coords(grid).filter(coord => gridGet(grid, coord) !== '.')
 let freqs = Map.groupBy(antennas, coord => gridGet(grid, coord))
 
-let antinodes = new Set<string>() // x,y
+let antinodes = new Set<string>()
 
-for (let [freq, coords] of freqs.entries()) {
+for (let [freq, coords] of freqs) {
 	for (let pair of pairs(coords)) {
 		let diff = subVec(pair[1], pair[0])
 		let anti1 = subVec(pair[0], diff)
@@ -78,7 +78,7 @@ log('result 1', antinodes.size)
 
 antinodes.clear()
 
-for (let [freq, coords] of freqs.entries()) {
+for (let [freq, coords] of freqs) {
 	for (let pair of pairs(coords)) {
 		let diff = subVec(pair[1], pair[0])
 		for (
