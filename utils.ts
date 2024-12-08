@@ -106,6 +106,7 @@ export const directions: Vec2[] = [...straightDirections, ...diagonalDirections]
 
 export function coords(grid: unknown[][]): Generator<Vec2, void, unknown>
 export function coords(h: number, w: number): Generator<Vec2, void, unknown>
+
 export function* coords(hOrGrid: number | unknown[][], w?: number) {
 	if (typeof hOrGrid !== 'number') {
 		w = hOrGrid[0]?.length ?? 0
@@ -117,7 +118,7 @@ export function* coords(hOrGrid: number | unknown[][], w?: number) {
 
 	for (let i of range(hOrGrid)) {
 		for (let j of range(w)) {
-			yield [i, j]
+			yield [j, i]
 		}
 	}
 }

@@ -28,21 +28,22 @@ let test = `............
 ............
 ............`
 
-// grid = toGrid(test)
+grid = toGrid(test)
 
-log('grid', grid)
+// log('grid', grid)
 
 function print(printAntis: boolean) {
 	let result = ''
 	for (let coord of coords(grid)) {
-		if (coord[1] === 0 && coord[0] > 0) {
+		let [y, x] = coord
+		if (y === 0 && x > 0) {
 			result += '\n'
 		}
 		if (printAntis) {
-			if (antinodes.has(coord.toReversed().join(','))) {
+			if (antinodes.has(coord.join(','))) {
 				result += '#'
 			} else {
-				result += gridGet(grid, [coord[1], coord[0]])
+				result += gridGet(grid, coord)
 			}
 
 		} else {
@@ -69,24 +70,34 @@ for (let coord of coords(grid)) {
 let antinodes = new Set<string>() // x,y
 
 for (let [freq, coords] of freqs.entries()) {
-	// if (freq !== 'A')
-	// 	continue
-
 	for (let pair of pairs(coords)) {
-		log('check pair', pair)
+		let diff = subVec(pair[1], pair[0])
+		let anti1 = subVec(pair[0], diff)
+		let anti2 = addVec(pair[1], diff)
+		if (gridIsWithin(anti1, grid)) {
+			antinodes.add(anti1.join(','))
+		}
+		if (gridIsWithin(anti2, grid)) {
+			antinodes.add(anti2.join(','))
+		}
+	}
+}
 
-		// if (pair[0][0] === 8) {
-		// 	if (pair[0][1] === 8) {
-		// 		continue
-		// 	}
-		// }
+// log('antinodes', antinodes)
+// log('!!! print\n' + print(true))
+
+log('result 1', antinodes.size)
+
+antinodes.clear()
+
+for (let [freq, coords] of freqs.entries()) {
+	for (let pair of pairs(coords)) {
 		let diff = subVec(pair[1], pair[0])
 		for (
 			let anti1 = pair[0];
 			gridIsWithin(anti1, grid);
 			anti1 = subVec(anti1, diff)
 		) {
-			log('pair', pair, 'draws before', anti1 )
 			antinodes.add(anti1.join(','))
 		}
 		for (
@@ -96,22 +107,7 @@ for (let [freq, coords] of freqs.entries()) {
 		) {
 			antinodes.add(anti2.join(','))
 		}
-		// 1
-		// let anti1 = subVec(pair[0], diff)
-		// let anti2 = addVec(pair[1], diff)
-		// if (gridIsWithin(anti1, grid)) {
-		// 	antinodes.add(anti1.join(','))
-		// }
-		// if (gridIsWithin(anti2, grid)) {
-		// 	antinodes.add(anti2.join(','))
-		// }
 	}
-
-	log('freq', freq)
-	log('coords', coords)
 }
 
-log('antinodes', antinodes)
-log('!!! print\n' + print(true))
-
-log('result', antinodes.size)
+log('result 2', antinodes.size)
