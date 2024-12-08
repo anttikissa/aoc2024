@@ -72,7 +72,7 @@ export function range(n: number, max?: number) {
 //            [2, 3], [2, 4],
 //                    [3, 4]]
 
-export function pairs(arr: number[]) {
+export function pairs<T>(arr: T[]) {
 	let result = []
 	for (let i = 0; i < arr.length; i++) {
 		for (let j = i + 1; j < arr.length; j++) {
@@ -124,6 +124,10 @@ export function* coords(hOrGrid: number | unknown[][], w?: number) {
 
 export function addVec([a, b]: Vec2, [c, d]: Vec2): Vec2 {
 	return [a + c, b + d]
+}
+
+export function subVec([a, b]: Vec2, [c, d]: Vec2): Vec2 {
+	return [a - c, b - d]
 }
 
 export function mulVec([a, b]: Vec2, x: number): Vec2 {
