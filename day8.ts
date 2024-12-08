@@ -47,7 +47,7 @@ function print(printAntis: boolean) {
 			}
 
 		} else {
-			result += gridGet(grid, [coord[1], coord[0]])
+			result += gridGet(grid, coord)
 
 		}
 	}
@@ -83,9 +83,7 @@ for (let [freq, coords] of freqs.entries()) {
 	}
 }
 
-// log('antinodes', antinodes)
-// log('!!! print\n' + print(true))
-
+// log('map after 1:\n' + print(true))
 log('result 1', antinodes.size)
 
 antinodes.clear()
@@ -110,4 +108,5 @@ for (let [freq, coords] of freqs.entries()) {
 	}
 }
 
+// log('map after 2:\n' + print(true))
 log('result 2', antinodes.size)

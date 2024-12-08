@@ -1,15 +1,8 @@
 # aoc2024
 
-To install dependencies:
+To run (for example):
 
-```bash
-bun install
+```
+bun day8.ts
 ```
 
-To run:
-
-```bash
-bun run index.ts
-```
-
-This project was created using `bun init` in bun v1.1.33. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
