@@ -28,7 +28,7 @@ let test = `............
 ............
 ............`
 
-grid = toGrid(test)
+// grid = toGrid(test)
 
 // log('grid', grid)
 
@@ -54,18 +54,8 @@ function print(printAntis: boolean) {
 	return result
 }
 
-let freqs = new Map<string, Vec2[]>()
-
-for (let coord of coords(grid)) {
-	let freq = gridGet(grid, coord)
-	if (freq !== '.') {
-		if (freqs.has(freq)) {
-			freqs.get(freq)!.push(coord)
-		} else {
-			freqs.set(freq, [coord])
-		}
-	}
-}
+let antennas = coords(grid).filter(coord => gridGet(grid, coord) !== '.')
+let freqs = Map.groupBy(antennas, coord => gridGet(grid, coord))
 
 let antinodes = new Set<string>() // x,y
 
