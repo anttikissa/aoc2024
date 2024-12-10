@@ -146,3 +146,7 @@ export function gridSet(grid: string[][], [x, y]: Vec2, value: string) {
 export function gridIsWithin([y, x]: Vec2, grid: string[][]) {
 	return y >= 0 && y < grid.length && x >= 0 && x < grid[0].length
 }
+
+export function uniqueCount(arr: unknown[]) {
+	return new Set(arr).size
+}
