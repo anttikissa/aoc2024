@@ -6,7 +6,7 @@ let file = readFile('day9.txt')
 
 let input = file.trim().split('')
 
-log('input', input.join(''))
+// log('input', input.join(''))
 
 let fs: (number | '.')[]
 let id = 0
@@ -35,7 +35,7 @@ function createFs() {
 
 fs = createFs()
 
-log('fs', fs.join(''))
+// log('fs', fs.join(''))
 
 // compact
 let pos = 0
@@ -46,16 +46,6 @@ for (let i = fs.length - 1; i >= 0; i--) {
 	if (fs[i] === '.') {
 		continue
 	}
-	let len = 0
-	let id = fs[i]
-	// for (let j = i; j >= 0 && log('fs, id', fs[j], id), fs[j] !== id ; j--) {
-	// 	log('check j', j, fs[j])
-	// 	// if (fs[j] !== id) {
-	// 	// 	break
-	// 	// }
-	// 	len++
-	// }
-	// log('file', fs[i], 'lenmgth', len)
 
 	while (fs[pos] !== '.') {
 		if (pos === fs.length) {
@@ -101,15 +91,9 @@ for (let i = fs.length - 1; i >= 0; i--) {
 	let len = 0
 	let id = fs[i]
 	for (let j = i; j >= 0 && fs[j] === id; j--) {
-		// log('!!! id', id)
-		// log('check j', j, fs[j])
-		// if (fs[j] !== id) {
-		// 	break
-		// }
 		len++
 		i = j
 	}
-	// log('id', id, 'len', len)
 
 	// move (i .. i+len) to leftmost pos of at least size len
 	let gapStart = -1
@@ -123,30 +107,13 @@ for (let i = fs.length - 1; i >= 0; i--) {
 					fs[gapStart + (l - i)] = fs[l]
 					fs[l] = '.'
 				}
-				// log('fs after move', fs.join(''))
 			}
 		} else {
 			gapStart = -1
 		}
 	}
-
-	// log('file', fs[i], 'len', len)
-
-	// while (fs[pos] !== '.') {
-	// 	if (pos === fs.length) {
-	// 		throw new Error('crash')
-	// 	}
-	// 	pos++
-	// }
-	// if (pos > i) {
-	// 	break
-	// }
-	//
-	// fs[pos] = fs[i]
-	// fs[i] = '.'
 }
 
-// log('fs', fs.join(''))
 let part2  = sum()
 
 log('part 2', part2)

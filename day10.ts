@@ -64,7 +64,7 @@ let trailheads = [
 	...coords(grid).filter((coord) => gridGet(grid, coord) === '0'),
 ]
 
-log({ grid, trailheads })
+// log({ grid, trailheads })
 
 // Array of all tops reachable from pos
 function countTops(pos: Vec2, pos2?: Vec2): Vec2[] {
@@ -95,7 +95,6 @@ let result = 0
 for (let trailhead of trailheads) {
 	let tops = countTops(trailhead).map((pos) => pos.join(','))
 	let uniques = uniqueCount(tops)
-	log('uniques', uniques)
 	result += uniques
 }
 
@@ -107,7 +106,6 @@ let result2 = 0
 for (let trailhead of trailheads) {
 	let tops = countTops(trailhead).map((pos) => pos.join(','))
 	let rating = tops.length
-	log('rating', rating)
 	result2 += rating
 }
 
