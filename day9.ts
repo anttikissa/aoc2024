@@ -1,6 +1,7 @@
-import { log, readFile } from './utils.ts'
+import { log } from './utils.ts'
 
-let file = readFile('day9.txt')
+// @ts-ignore
+import file from './day9.txt' with { type: 'text' }
 
 // file = `2333133121414131402`
 
@@ -114,6 +115,6 @@ for (let i = fs.length - 1; i >= 0; i--) {
 	}
 }
 
-let part2  = sum()
+let part2 = sum()
 
 log('part 2', part2)

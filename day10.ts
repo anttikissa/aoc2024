@@ -4,14 +4,18 @@ import {
 	gridGet,
 	gridIsWithin,
 	log,
-	readFile,
 	straightDirections,
 	toGrid,
 	uniqueCount,
 	type Vec2,
 } from './utils.ts'
 
-let file = readFile('day10.txt')
+// @ts-ignore
+import file from './day10.txt' with { type: 'text' }
+
+// let file = readFile('day10.txt')
+
+// log('file', file)
 
 let grid = toGrid(file)
 

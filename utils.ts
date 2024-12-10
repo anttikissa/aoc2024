@@ -150,3 +150,40 @@ export function gridIsWithin([y, x]: Vec2, grid: string[][]) {
 export function uniqueCount(arr: unknown[]) {
 	return new Set(arr).size
 }
+
+//
+// Usage:
+//
+// using t = timer('name')
+//
+// Alternatively,
+//
+// timer.start('name')
+// ... code ...
+// timer.end('name')
+//
+export function timer(what: string) {
+	return timer.timer(what)
+}
+
+timer.startTimes = new Map<string, number>()
+
+timer.start = function (what: string) {
+	this.startTimes.set(what, Date.now())
+}
+
+timer.end = function (what: string) {
+	let start = this.startTimes.get(what)
+	if (!start) {
+		throw new Error(`forgot to call perf.start('${what}')?`)
+	}
+	let elapsed = Date.now() - start
+	log(`[perf] ${what}: ${elapsed} ms`)
+}
+
+timer.timer = function (what: string) {
+	this.start(what)
+	return {
+		[Symbol.dispose]: () => this.end(what),
+	}
+}
