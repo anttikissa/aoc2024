@@ -89,6 +89,6 @@ function stoneCount(stones: number[], n: number) {
 	return result
 }
 
-for (let i = 0; i < 80; i++) {
-	log(`after ${i} blinks, length is `, stoneCount(stones, i))
+for (let i = 0; i <= 75; i++) {
+	log(`after ${i} blinks, length is ${stoneCount(stones, i)}`)
 }

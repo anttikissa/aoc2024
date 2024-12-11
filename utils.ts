@@ -1,6 +1,7 @@
 import fs from 'fs'
 
 export function log(...args: unknown[]) {
+	let t = new Date().toISOString().replace('T', ' ').replace('Z', '')
 	let result = []
 
 	for (let arg of args) {
@@ -15,8 +16,11 @@ export function log(...args: unknown[]) {
 		}
 	}
 
-	console.log(result.join(' '))
+	console.log(t, result.join(' '))
 }
+
+// Function that does nothing, call this to avoid tree-shaking
+export function include(...args: unknown[]) {}
 
 //
 // Reading and parsing
@@ -149,6 +153,31 @@ export function gridIsWithin([y, x]: Vec2, grid: string[][]) {
 
 export function uniqueCount(arr: unknown[]) {
 	return new Set(arr).size
+}
+
+//
+// Misc math
+//
+
+export function sum(numbers: number[]) {
+	return numbers.reduce((a, b) => a + b, 0)
+}
+
+//
+// Caching
+//
+
+export function cache<T>(fn: (...args: any[]) => T): (...args: any[]) => T {
+	let cache = new Map<string, any>()
+	return (...args: any[]): T => {
+		let key = JSON.stringify(args)
+		if (cache.has(key)) {
+			return cache.get(key)
+		}
+		let result = fn(...args)
+		cache.set(key, result)
+		return result
+	}
 }
 
 //
