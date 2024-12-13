@@ -1,5 +1,5 @@
 import {
-	addVec,
+	vecAdd,
 	coords,
 	gridGet,
 	gridIsWithin,
@@ -80,7 +80,7 @@ function countTops(pos: Vec2, pos2?: Vec2): Vec2[] {
 	if (gridGet(grid, pos) === '9') {
 		return [pos]
 	}
-	let adjacentPositions = straightDirections.map((dir) => addVec(pos, dir))
+	let adjacentPositions = straightDirections.map((dir) => vecAdd(pos, dir))
 	let legitPositions = adjacentPositions.filter((pos) => {
 		return (
 			// @ts-ignore sloppy JS comparison

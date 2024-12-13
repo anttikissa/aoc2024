@@ -116,6 +116,21 @@ export function pairs<T>(arr: T[]) {
 	return result
 }
 
+// [1,2,3] => [[1,2], [2,3]]
+export function adjacents(arr: number[]) {
+	return range(arr.length - 1).map((i) => [arr[i], arr[i + 1]])
+}
+
+// Cartesian product
+// product([1,2], ['x', 'y']) => [[1, 'x'], [1, 'y'], [2, 'x'], [2, 'y']]
+export function* product<T, U>(a: Iterable<T>, b: Iterable<U>) {
+	for (let x of a) {
+		for (let y of b) {
+			yield [x, y]
+		}
+	}
+}
+
 //
 // Vectors, directions, grids
 //
@@ -199,15 +214,15 @@ export function integerEnough(n: number, tolerance = 1e-4) {
 	return Math.abs(n - Math.round(n)) < tolerance
 }
 
-export function addVec([a, b]: Vec2, [c, d]: Vec2): Vec2 {
+export function vecAdd([a, b]: Vec2, [c, d]: Vec2): Vec2 {
 	return [a + c, b + d]
 }
 
-export function subVec([a, b]: Vec2, [c, d]: Vec2): Vec2 {
+export function vecSub([a, b]: Vec2, [c, d]: Vec2): Vec2 {
 	return [a - c, b - d]
 }
 
-export function mulVec([a, b]: Vec2, x: number): Vec2 {
+export function vecMul([a, b]: Vec2, x: number): Vec2 {
 	return [a * x, b * x]
 }
 
@@ -219,12 +234,57 @@ export function gridSet(grid: string[][], [x, y]: Vec2, value: string) {
 	grid[y][x] = value
 }
 
+export function gridNeighbors(pos: Vec2) {
+	return straightDirections.map((dir) => vecAdd(pos, dir))
+}
+
+export function isDiagonalNeighbor(a: Vec2, b: Vec2) {
+	let [dx, dy] = vecSub(a, b)
+	return Math.abs(dx) === 1 && Math.abs(dy) === 1
+}
+
+export function gridWidth(grid: string[][]) {
+	return grid[0].length
+}
+
+export function gridHeight(grid: string[][]) {
+	return grid.length
+}
+
 export function gridIsWithin([x, y]: Vec2, grid: string[][]) {
 	return y >= 0 && y < grid.length && x >= 0 && x < grid[0].length
 }
 
+export function areaBounds(area: ValueSet<Vec2>) {
+	let min = [Infinity, Infinity]
+	let max = [-Infinity, -Infinity]
+
+	for (let pos of area) {
+		min[0] = Math.min(min[0], pos[0])
+		min[1] = Math.min(min[1], pos[1])
+		max[0] = Math.max(max[0], pos[0])
+		max[1] = Math.max(max[1], pos[1])
+	}
+	return { min, max }
+}
 export function gridPrint(grid: string[][]) {
 	return grid.map((row) => row.join('')).join('\n')
+}
+
+export function gridFloodFill(
+	grid: string[][],
+	start: Vec2,
+	color = gridGet(grid, start),
+	visited = new ValueSet()
+): ValueSet<Vec2> {
+	visited.add(start)
+	for (let neighbor of gridNeighbors(start)) {
+		if (gridGet(grid, neighbor) === color && !visited.has(neighbor)) {
+			gridFloodFill(grid, neighbor, color, visited)
+		}
+	}
+
+	return visited
 }
 
 //
@@ -232,6 +292,80 @@ export function gridPrint(grid: string[][]) {
 //
 export function uniqueCount(arr: unknown[]) {
 	return new Set(arr).size
+}
+
+// Like Set, but for types where deep equality is desired instead of reference
+// equality
+//
+// Not all methods of Set<> implemented, add as needed
+//
+// let v = new ValueSet()
+// v.add([1,2])
+// assert(v.has([1,2]))
+export class ValueSet<T> {
+	set = new Set<string>()
+	unparse = (value: T) => JSON.stringify(value)
+	parse = (str: string) => JSON.parse(str)
+
+	constructor(values?: Iterable<T>) {
+		if (values !== undefined) {
+			// @ts-ignore go home TS
+			this.set = new Set<string>(values.map(this.unparse))
+		} else {
+			this.set = new Set<string>()
+		}
+	}
+
+	has(value: T) {
+		return this.set.has(this.unparse(value))
+	}
+
+	add(value: T) {
+		return this.set.add(this.unparse(value))
+	}
+
+	delete(value: T) {
+		return this.set.delete(this.unparse(value))
+	}
+
+	// Custom
+	deleteAll(values: Iterable<T>) {
+		for (let value of values) {
+			this.delete(value)
+		}
+	}
+
+	get size() {
+		return this.set.size
+	}
+
+	*values() {
+		for (let val of this.set.values()) {
+			yield this.parse(val)
+		}
+	}
+
+	[Symbol.iterator]() {
+		return this.values()
+	}
+
+	// Custom; pick one element from the set
+	// O(n)
+	first() {
+		assert(this.size > 0)
+		return this.parse([...this.set.values()][0])
+	}
+
+	difference(other: ValueSet<T>) {
+		let result = new ValueSet()
+		result.set = this.set.difference(other.set)
+		return result
+	}
+
+	// Helps with logging
+	toJSON() {
+		return [...this.values()]
+	}
 }
 
 //

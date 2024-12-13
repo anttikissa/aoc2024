@@ -1,11 +1,11 @@
 import {
-	addVec,
+	vecAdd,
 	coords,
 	gridGet,
 	gridIsWithin,
 	pairs,
 	readFile,
-	subVec,
+	vecSub,
 	toGrid,
 	type Vec2,
 } from './utils.ts'
@@ -45,25 +45,23 @@ function print(printAntis: boolean) {
 			} else {
 				result += gridGet(grid, coord)
 			}
-
 		} else {
 			result += gridGet(grid, coord)
-
 		}
 	}
 	return result
 }
 
-let antennas = coords(grid).filter(coord => gridGet(grid, coord) !== '.')
-let freqs = Map.groupBy(antennas, coord => gridGet(grid, coord))
+let antennas = coords(grid).filter((coord) => gridGet(grid, coord) !== '.')
+let freqs = Map.groupBy(antennas, (coord) => gridGet(grid, coord))
 
 let antinodes = new Set<string>()
 
 for (let [freq, coords] of freqs) {
 	for (let pair of pairs(coords)) {
-		let diff = subVec(pair[1], pair[0])
-		let anti1 = subVec(pair[0], diff)
-		let anti2 = addVec(pair[1], diff)
+		let diff = vecSub(pair[1], pair[0])
+		let anti1 = vecSub(pair[0], diff)
+		let anti2 = vecAdd(pair[1], diff)
 		if (gridIsWithin(anti1, grid)) {
 			antinodes.add(anti1.join(','))
 		}
@@ -80,18 +78,18 @@ antinodes.clear()
 
 for (let [freq, coords] of freqs) {
 	for (let pair of pairs(coords)) {
-		let diff = subVec(pair[1], pair[0])
+		let diff = vecSub(pair[1], pair[0])
 		for (
 			let anti1 = pair[0];
 			gridIsWithin(anti1, grid);
-			anti1 = subVec(anti1, diff)
+			anti1 = vecSub(anti1, diff)
 		) {
 			antinodes.add(anti1.join(','))
 		}
 		for (
 			let anti2 = pair[1];
 			gridIsWithin(anti2, grid);
-			anti2 = addVec(anti2, diff)
+			anti2 = vecAdd(anti2, diff)
 		) {
 			antinodes.add(anti2.join(','))
 		}

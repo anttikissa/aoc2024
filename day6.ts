@@ -1,5 +1,5 @@
 import {
-	addVec,
+	vecAdd,
 	coords,
 	gridGet,
 	gridIsWithin,
@@ -47,12 +47,7 @@ let dirs: Vec2[] = [
 	[-1, 0],
 ]
 
-let guards = [
-	'^',
-	'>',
-	'v',
-	'<',
-]
+let guards = ['^', '>', 'v', '<']
 
 let currentDir = 0
 
@@ -85,7 +80,7 @@ function step(grid: string[][]) {
 	// Record the direction we're been here in
 	addPreviousDir(guardPos.join(','), dirs[currentDir])
 
-	let nextPos = addVec(guardPos, dirs[currentDir])
+	let nextPos = vecAdd(guardPos, dirs[currentDir])
 
 	if (!gridIsWithin(nextPos, grid)) {
 		// Next pos out of bounds -> quit
@@ -163,4 +158,3 @@ for (let coord of coords(origGrid)) {
 }
 
 log('part 2', result2)
-

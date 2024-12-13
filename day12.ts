@@ -1,13 +1,13 @@
 // @ts-ignore
 import file from './day12.txt' with { type: 'text' }
 import {
-	addVec,
+	vecAdd,
 	coords,
 	diagonalDirections,
 	gridGet,
 	gridPrint,
 	log,
-	mulVec,
+	vecMul,
 	parseVec,
 	straightDirections,
 	sum,
@@ -66,7 +66,7 @@ function traverse(start: Vec2) {
 		let pos = parseVec(firstNeighbor)
 		newNeighbors.delete(firstNeighbor)
 		let color = gridGet(grid, pos)
-		let neighbors = straightDirections.map((dir) => addVec(pos, dir))
+		let neighbors = straightDirections.map((dir) => vecAdd(pos, dir))
 		let validNeighbors = neighbors.filter(
 			(pos) => gridGet(grid, pos) === color
 		)
@@ -90,7 +90,7 @@ function perimeter(region: Region) {
 	let borders = region.coords.map((coord) => {
 		let result = 0
 		for (let dir of straightDirections) {
-			let pos = addVec(coord, dir)
+			let pos = vecAdd(coord, dir)
 			if (gridGet(grid, pos) !== region.color) {
 				result++
 			}
@@ -111,11 +111,11 @@ function sides(region: Region) {
 
 	for (let coord of region.coords) {
 		let diagonalPoints: Vec2[] = diagonalDirections.map((dir) =>
-			addVec(coord, mulVec(dir, 0.5))
+			vecAdd(coord, vecMul(dir, 0.5))
 		)
 		for (let diagPoint of diagonalPoints) {
 			let adjacentCoords = diagonalDirections.map((dir) =>
-				addVec(diagPoint, mulVec(dir, 0.5))
+				vecAdd(diagPoint, vecMul(dir, 0.5))
 			)
 
 			let outsides = adjacentCoords
