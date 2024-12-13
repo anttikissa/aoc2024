@@ -1,26 +1,56 @@
 import fs from 'fs'
 
+//
+// Logging, debugging & testing
+//
+
 export function log(...args: unknown[]) {
 	let t = new Date().toISOString().replace('T', ' ').replace('Z', '')
-	let result = []
+	let result: string[] = []
+
+	function print(arg: unknown) {
+		let str = ''
+		if (typeof arg === 'object') {
+			if (arg instanceof Set) {
+				let contents = print([...arg])
+				str = `new Set(${contents})`
+			} else if (arg instanceof Map) {
+			} else {
+				str = JSON.stringify(arg)
+			}
+		} else if (typeof arg === 'string') {
+			str = arg
+		} else if (typeof arg === 'number') {
+			str = arg.toString()
+		} else {
+			str = String(arg)
+		}
+		return str
+	}
 
 	for (let arg of args) {
-		if (typeof arg === 'object') {
-			result.push(JSON.stringify(arg))
-		} else if (typeof arg === 'string') {
-			result.push(arg)
-		} else if (typeof arg === 'number') {
-			result.push(arg.toString())
-		} else {
-			result.push(String(arg))
-		}
+		result.push(print(arg))
 	}
 
 	console.log(t, result.join(' '))
 }
 
-// Function that does nothing, call this to avoid tree-shaking
-export function include(...args: unknown[]) {}
+export function fail(whatever: unknown) {
+	log('fail:', whatever)
+	throw new Error('error')
+}
+
+export function assert(truthy: unknown): void
+export function assert(a: unknown, b: unknown): void
+export function assert(a: unknown, b?: unknown) {
+	if (b === undefined) {
+		if (!a) {
+			throw new Error(`expected ${a} to be truthy`)
+		}
+	} else if (a !== b) {
+		throw new Error(`expected ${a} to equal ${b}`)
+	}
+}
 
 //
 // Reading and parsing
@@ -90,7 +120,16 @@ export function pairs<T>(arr: T[]) {
 // Vectors, directions, grids
 //
 
-export type Vec2 = [number, number]
+export type Vec2 = [x: number, y: number]
+
+// Opposite of String(vec)
+export function parseVec(vec: string): Vec2 {
+	let result = vec.split(',').map(Number)
+	if (result.length !== 2) {
+		throw new Error('invalid vec')
+	}
+	return result as Vec2
+}
 
 export const straightDirections: Vec2[] = [
 	[0, 1],
@@ -120,11 +159,44 @@ export function* coords(hOrGrid: number | unknown[][], w?: number) {
 		throw new Error('missing w')
 	}
 
-	for (let i of range(hOrGrid)) {
-		for (let j of range(w)) {
-			yield [j, i]
+	for (let y of range(hOrGrid)) {
+		for (let x of range(w)) {
+			yield [x, y]
 		}
 	}
+}
+
+// [ x1, x2 ]
+// [ y1, y2 ]
+export type Mtx2 = [x: Vec2, y: Vec2]
+
+export function mtxMul(mtx: Mtx2, vec: Vec2): Vec2 {
+	let [[a, b], [c, d]] = mtx
+	let [x, y] = vec
+	return [a * x + b * y, c * x + d * y]
+}
+
+// Calculate determinant
+function mtxDet(mtx: [x: [x: number, y: number], y: [x: number, y: number]]) {
+	return mtx[0][0] * mtx[1][1] - mtx[0][1] * mtx[1][0]
+}
+
+export function mtxInvertible(mtx: Mtx2): boolean {
+	return mtxDet(mtx) !== 0
+}
+
+export function mtxInvert(mtx: Mtx2): Mtx2 {
+	let [[a, b], [c, d]] = mtx
+	let det = mtxDet(mtx)
+	return [
+		[d / det, -b / det],
+		[-c / det, a / det],
+	]
+}
+
+// Because floating point math is hard
+export function integerEnough(n: number, tolerance = 1e-4) {
+	return Math.abs(n - Math.round(n)) < tolerance
 }
 
 export function addVec([a, b]: Vec2, [c, d]: Vec2): Vec2 {
@@ -147,10 +219,17 @@ export function gridSet(grid: string[][], [x, y]: Vec2, value: string) {
 	grid[y][x] = value
 }
 
-export function gridIsWithin([y, x]: Vec2, grid: string[][]) {
+export function gridIsWithin([x, y]: Vec2, grid: string[][]) {
 	return y >= 0 && y < grid.length && x >= 0 && x < grid[0].length
 }
 
+export function gridPrint(grid: string[][]) {
+	return grid.map((row) => row.join('')).join('\n')
+}
+
+//
+// Set stuff
+//
 export function uniqueCount(arr: unknown[]) {
 	return new Set(arr).size
 }
@@ -181,6 +260,9 @@ export function cache<T>(fn: (...args: any[]) => T): (...args: any[]) => T {
 }
 
 //
+// Performance
+//
+
 // Usage:
 //
 // using t = timer('name')
@@ -215,4 +297,15 @@ timer.timer = function (what: string) {
 	return {
 		[Symbol.dispose]: () => this.end(what),
 	}
+}
+
+//
+// Web stuff
+//
+
+// Function that does nothing, call this to avoid tree-shaking
+export function include(...args: unknown[]) {}
+
+export function $(selector: string) {
+	return document.querySelector(selector)
 }
