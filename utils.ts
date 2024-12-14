@@ -15,6 +15,9 @@ export function log(...args: unknown[]) {
 				let contents = print([...arg])
 				str = `new Set(${contents})`
 			} else if (arg instanceof Map) {
+				str = 'new Map("TODO")'
+			} else if (arg instanceof Error) {
+				str = '[ERROR] ' + arg.message
 			} else {
 				str = JSON.stringify(arg)
 			}
@@ -173,7 +176,6 @@ export function* coords(hOrGrid: number | unknown[][], w?: number) {
 	if (w == null) {
 		throw new Error('missing w')
 	}
-
 	for (let y of range(hOrGrid)) {
 		for (let x of range(w)) {
 			yield [x, y]
