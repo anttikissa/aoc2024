@@ -22,6 +22,7 @@ async function buildAll() {
 			'./day7.ts',
 			'./day8.ts',
 			'./day9.ts',
+			'./day9-again.ts',
 			'./day10.ts',
 			'./day11.ts',
 		],
