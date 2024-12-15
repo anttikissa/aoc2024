@@ -38,7 +38,7 @@ export function log(...args: unknown[]) {
 	console.log(t, result.join(' '))
 }
 
-export function fail(whatever: unknown) {
+export function fail(whatever?: unknown): never {
 	log('fail:', whatever)
 	throw new Error('error')
 }
