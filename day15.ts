@@ -74,10 +74,11 @@ function solve(input: string, part = 1) {
 		.split('')
 		.filter((i: string) => i !== '\n')
 
-	let robot = coords(grid).find((pos) => gridGet(grid, pos) === '@') as Vec2
-	gridSet(grid, robot, '.')
+	let robotPos = coords(grid).find(
+		(pos) => gridGet(grid, pos) === '@'
+	) as Vec2
 
-	// log('grid before:\n' + gridPrint(grid, '@', robot) + '\n')
+	log('grid before:\n' + gridPrint(grid) + '\n')
 
 	function move(
 		currPos: Vec2,
@@ -118,9 +119,9 @@ function solve(input: string, part = 1) {
 	function step(instr: string) {
 		let dir = straightDirections['v<^>'.indexOf(instr)]
 
-		if (move(robot, dir, 'simulate')) {
-			move(robot, dir, 'for-real')
-			robot = vecAdd(robot, dir)
+		if (move(robotPos, dir, 'simulate')) {
+			move(robotPos, dir, 'for-real')
+			robotPos = vecAdd(robotPos, dir)
 		}
 	}
 
@@ -128,7 +129,7 @@ function solve(input: string, part = 1) {
 		step(instr)
 	}
 
-	log('grid after:\n' + gridPrint(grid, '@', robot) + '\n')
+	log('grid after:\n' + gridPrint(grid) + '\n')
 
 	let boxes = [...coords(grid)].filter((pos) =>
 		'O['.includes(gridGet(grid, pos))
