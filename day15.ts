@@ -4,16 +4,16 @@ import file from './day15.txt'
 import {
 	assert,
 	coords,
+	fail,
 	gridGet,
-	log,
-	straightDirections,
-	toGrid,
-	vecAdd,
-	type Vec2,
 	gridPrint,
 	gridSet,
+	log,
+	straightDirections,
 	sum,
-	fail,
+	toGrid,
+	type Vec2,
+	vecAdd,
 } from './utils'
 
 let test = `
@@ -77,74 +77,50 @@ function solve(input: string, part = 1) {
 	let robot = coords(grid).find((pos) => gridGet(grid, pos) === '@') as Vec2
 	gridSet(grid, robot, '.')
 
-	// log('grid before\n' + gridPrint(grid, '@', robot) + '\n')
+	// log('grid before:\n' + gridPrint(grid, '@', robot) + '\n')
 
-	function step(instr: string) {
-		let dir = straightDirections['v<^>'.indexOf(instr)]
+	function move(
+		currPos: Vec2,
+		dir: Vec2,
+		mode: 'simulate' | 'for-real'
+	): boolean {
+		let nextPos = vecAdd(currPos, dir)
+		let next = gridGet(grid, nextPos)
 
-		function canMove(thisPos: Vec2, dir: Vec2): boolean {
-			let nextPos = vecAdd(thisPos, dir)
-			let next = gridGet(grid, nextPos)
-
+		try {
 			switch (next) {
-				case '#':
-					return false
 				case '.':
 					return true
+				case '#':
+					return false
 				case 'O':
-					return canMove(nextPos, dir)
-				case '[':
-				case ']':
-					let pairDir = (next === '[' ? [1, 0] : [-1, 0]) as Vec2
-					let pair = vecAdd(nextPos, pairDir)
-					if (dir[0] === -pairDir[0] && dir[1] === 0) {
-						// Avoid infinite recursion
-						return canMove(nextPos, dir)
-					} else {
-						// Check pair too
-						return canMove(pair, dir) && canMove(nextPos, dir)
-					}
-				default:
-					fail('nope')
-			}
-		}
-
-		function move(thisPos: Vec2, dir: Vec2) {
-			let nextPos = vecAdd(thisPos, dir)
-			let next = gridGet(grid, nextPos)
-
-			switch (next) {
-				case '.':
-					break
-				case 'O':
-					move(nextPos, dir)
-					break
+					return move(nextPos, dir, mode)
 				case '[':
 				case ']':
 					let nextDir = (next === '[' ? [1, 0] : [-1, 0]) as Vec2
 					if (dir[0] === -nextDir[0] && dir[1] === 0) {
-						move(nextPos, dir)
+						return move(nextPos, dir, mode)
 					} else {
 						let pair = vecAdd(nextPos, nextDir)
-						move(pair, dir)
-						move(nextPos, dir)
+						return move(pair, dir, mode) && move(nextPos, dir, mode)
 					}
-					break
-				case '#':
-				default:
-					fail('nope')
 			}
-
-			let curr = gridGet(grid, thisPos)
-			gridSet(grid, thisPos, '.')
-			gridSet(grid, nextPos, curr)
+		} finally {
+			let curr = gridGet(grid, currPos)
+			if (mode === 'for-real') {
+				gridSet(grid, currPos, '.')
+				gridSet(grid, nextPos, curr)
+			}
 		}
+		fail('nope')
+	}
 
-		let nextPos = vecAdd(robot, dir)
+	function step(instr: string) {
+		let dir = straightDirections['v<^>'.indexOf(instr)]
 
-		if (canMove(robot, dir)) {
-			move(robot, dir)
-			robot = nextPos
+		if (move(robot, dir, 'simulate')) {
+			move(robot, dir, 'for-real')
+			robot = vecAdd(robot, dir)
 		}
 	}
 
@@ -152,7 +128,7 @@ function solve(input: string, part = 1) {
 		step(instr)
 	}
 
-	log('grid after\n' + gridPrint(grid, '@', robot) + '\n')
+	log('grid after:\n' + gridPrint(grid, '@', robot) + '\n')
 
 	let boxes = [...coords(grid)].filter((pos) =>
 		'O['.includes(gridGet(grid, pos))
