@@ -233,6 +233,10 @@ export function gridGet(grid: string[][], [x, y]: Vec2) {
 }
 
 export function gridSet(grid: string[][], [x, y]: Vec2, value: string) {
+	if (!gridIsWithin([x, y], grid)) {
+		log('gridSet outside', [x, y])
+		return
+	}
 	grid[y][x] = value
 }
 
@@ -269,8 +273,22 @@ export function areaBounds(area: ValueSet<Vec2>) {
 	}
 	return { min, max }
 }
-export function gridPrint(grid: string[][]) {
-	return grid.map((row) => row.join('')).join('\n')
+
+export function gridPrint(grid: string[][], who?: string, where?: Vec2) {
+	let prev = '.'
+
+	let y, x
+	if (who && where) {
+		;[x, y] = where
+		prev = gridGet(grid, where)
+		gridSet(grid, where, who)
+	}
+	let result = grid.map((row) => row.join('')).join('\n')
+	if (who && where) {
+		gridSet(grid, where, prev)
+	}
+
+	return result
 }
 
 export function gridFloodFill(
