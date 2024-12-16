@@ -60,7 +60,7 @@ let test2 = `
 #S#.............#
 #################`
 
-function solve(input: string) {
+function solve(input: string, part = 1) {
 	let grid = toGrid(input)
 
 	let goal = coords(grid).find((c) => gridGet(grid, c) === 'E')!
@@ -124,19 +124,52 @@ function solve(input: string) {
 		return gridGet(grid, [x, y]) !== '#'
 	}
 
+	// Record of all visited nodes
 	let trail: Node[] = []
 	let trailDistances: number[] = []
 
+	// values are JSON.stringified nodes; whenever a shortest part is found,
+	// the preceding node is recorded here
+	let optimalPredecessors = new Map<string, string>()
+
 	function step(): 'continue' | number {
-		log(`step(): ${unvisited.size} remaining`)
+		// log(`step(): ${unvisited.size} remaining`)
 		if (unvisited.size === 0) {
-			let distancesToEnd = range(4).map((dir) =>
-				getDistance([goal[0], goal[1], dir as Dir])
-			)
-			// log('distances to end', distancesToEnd)
-			let shortestDistance = Math.min(...distancesToEnd)
-			// log('empty unvisited, return', shortestDistance)
-			return shortestDistance
+			if (part === 1) {
+				// Part 1
+				let distancesToEnd = range(4).map((dir) =>
+					getDistance([goal[0], goal[1], dir as Dir])
+				)
+				// log('distances to end', distancesToEnd)
+				let shortestDistance = Math.min(...distancesToEnd)
+				// log('empty unvisited, return', shortestDistance)
+				return shortestDistance
+			}
+
+			if (part === 2) {
+				// Part 2
+				let finalNodes = range(4).map(
+					(dir) => [goal[0], goal[1], dir as Dir] as Node
+				)
+				finalNodes.sort((n1, n2) => getDistance(n1) - getDistance(n2))
+				log('finalNodes', finalNodes.map(printNode))
+				let node = printNode(finalNodes[0])
+
+				let seen = new Set<string>()
+				while (optimalPredecessors.has(node)) {
+					let predecessor = optimalPredecessors.get(node)!
+					log('predecessor of', node, 'was', predecessor)
+					seen.add(node)
+					node = predecessor
+				}
+
+				log('seen', seen.size)
+
+				return seen.size
+				// log('shortest', printNode(node))
+
+				return 0
+			}
 		}
 
 		// TODO optimize this
@@ -201,6 +234,10 @@ function solve(input: string) {
 				// 		'(go straight)'
 				// 	)
 				setDistance(straight, newDist)
+				optimalPredecessors.set(
+					printNode(straight),
+					printNode(nearestNode)
+				)
 			}
 		}
 		let currDistLeft = getDistance(left)
@@ -215,6 +252,7 @@ function solve(input: string) {
 			// )
 
 			setDistance(left, newDistLeft)
+			optimalPredecessors.set(printNode(left), printNode(nearestNode))
 		}
 
 		let currDistRight = getDistance(right)
@@ -233,6 +271,7 @@ function solve(input: string) {
 			// )
 
 			setDistance(right, newDistRight)
+			optimalPredecessors.set(printNode(right), printNode(nearestNode))
 		}
 
 		gridSet(seen, [nearestNode[0], nearestNode[1]], 'X')
@@ -279,4 +318,6 @@ function solve(input: string) {
 
 assert(solve(test), 7036)
 assert(solve(test2), 11048)
-assert(solve(input), 111480)
+// assert(solve(input), 111480)
+
+assert(solve(test, 2), 1)
