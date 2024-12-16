@@ -38,8 +38,8 @@ export function log(...args: unknown[]) {
 	console.log(t, result.join(' '))
 }
 
-export function fail(whatever?: unknown): never {
-	log('fail:', whatever)
+export function fail(...whatever: unknown[]): never {
+	log('fail:', ...whatever)
 	throw new Error('error')
 }
 
@@ -149,12 +149,12 @@ export function parseVec(vec: string): Vec2 {
 	return result as Vec2
 }
 
-export const straightDirections: Vec2[] = [
-	[0, 1],
-	[-1, 0],
-	[0, -1],
-	[1, 0],
-]
+export const DOWN = [0, 1] as Vec2
+export const LEFT = [-1, 0] as Vec2
+export const UP = [0, -1] as Vec2
+export const RIGHT = [1, 0] as Vec2
+
+export const straightDirections: Vec2[] = [DOWN, LEFT, UP, RIGHT]
 
 export const diagonalDirections: Vec2[] = [
 	[1, 1],
@@ -228,8 +228,20 @@ export function vecMul([a, b]: Vec2, x: number): Vec2 {
 	return [a * x, b * x]
 }
 
-export function gridGet(grid: string[][], [x, y]: Vec2) {
+export function gridGet<T>(grid: T[][], [x, y]: Vec2) {
 	return grid[y]?.[x] || '.'
+}
+
+export function gridMap<T, U>(grid: T[][], fn: (value: T) => U) {
+	let result = []
+	for (let row of grid) {
+		let newRow = Array(row.length)
+		for (let i = 0; i < row.length; i++) {
+			newRow[i] = fn(row[i])
+		}
+		result.push(newRow)
+	}
+	return result
 }
 
 export function gridSet(grid: string[][], [x, y]: Vec2, value: string) {
@@ -274,7 +286,7 @@ export function areaBounds(area: ValueSet<Vec2>) {
 	return { min, max }
 }
 
-export function gridPrint(grid: string[][], who?: string, where?: Vec2) {
+export function gridPrint<T>(grid: T[][], who?: string, where?: Vec2) {
 	let prev = '.'
 
 	let y, x
