@@ -286,20 +286,40 @@ export function areaBounds(area: ValueSet<Vec2>) {
 	return { min, max }
 }
 
-export function gridPrint<T>(grid: T[][], who?: string, where?: Vec2) {
-	let prev = '.'
+function isVec2(v: unknown): v is Vec2 {
+	return (
+		Array.isArray(v) &&
+		v.length === 2 &&
+		typeof v[0] === 'number' &&
+		typeof v[1] === 'number'
+	)
+}
 
-	let y, x
-	if (who && where) {
-		;[x, y] = where
-		prev = gridGet(grid, where)
-		gridSet(grid, where, who)
-	}
-	let result = grid.map((row) => row.join('')).join('\n')
-	if (who && where) {
-		gridSet(grid, where, prev)
-	}
+export function gridPrint<T>(
+	grid: T[][],
+	who?: string,
+	where?: Vec2 | Iterable<Vec2>
+) {
+	let result = ''
+	let wheres: Vec2[] = []
 
+	if (who && where) {
+		if (isVec2(where)) {
+			wheres = [where]
+		} else {
+			wheres = [...where]
+		}
+	}
+	for (let coord of coords(grid)) {
+		let val = gridGet(grid, coord)
+		if (who && wheres.some((w) => w[0] === coord[0] && w[1] === coord[1])) {
+			val = who
+		}
+		result += val
+		if (coord[0] === grid[0].length - 1) {
+			result += '\n'
+		}
+	}
 	return result
 }
 

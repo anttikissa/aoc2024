@@ -9,6 +9,7 @@ import {
 	gridPrint,
 	gridSet,
 	log,
+	parseVec,
 	range,
 	RIGHT,
 	straightDirections,
@@ -130,10 +131,28 @@ function solve(input: string, part = 1) {
 
 	// values are JSON.stringified nodes; whenever a shortest part is found,
 	// the preceding node is recorded here
-	let optimalPredecessors = new Map<string, string>()
+	let optimalPredecessors = new Map<string, string[]>()
+
+	function addOptimalPredecessor(
+		nodeN: Node,
+		predecessorN: Node,
+		wipe = false
+	) {
+		let node = printNode(nodeN)
+		let predecessor = printNode(predecessorN)
+		if (optimalPredecessors.has(node)) {
+			if (wipe) {
+				optimalPredecessors.set(node, [predecessor])
+			} else {
+				optimalPredecessors.get(node)!.push(predecessor)
+			}
+		} else {
+			optimalPredecessors.set(node, [predecessor])
+		}
+	}
 
 	function step(): 'continue' | number {
-		// log(`step(): ${unvisited.size} remaining`)
+		log(`step(): ${unvisited.size} remaining`)
 		if (unvisited.size === 0) {
 			if (part === 1) {
 				// Part 1
@@ -153,22 +172,42 @@ function solve(input: string, part = 1) {
 				)
 				finalNodes.sort((n1, n2) => getDistance(n1) - getDistance(n2))
 				log('finalNodes', finalNodes.map(printNode))
-				let node = printNode(finalNodes[0])
+				// let node = printNode(finalNodes[0])
 
 				let seen = new Set<string>()
-				while (optimalPredecessors.has(node)) {
-					let predecessor = optimalPredecessors.get(node)!
-					log('predecessor of', node, 'was', predecessor)
+				let unvisited: string[] = [printNode(finalNodes[0])]
+				while (unvisited.length) {
+					let node = unvisited.pop()!
 					seen.add(node)
-					node = predecessor
+
+					let predecessors = optimalPredecessors.get(node)!
+					if (!predecessors) {
+						log('no predecessors for', node)
+						continue
+					}
+					let idx = 0
+					for (let predecessor of predecessors) {
+						log(`predecessor ${idx++} of ${node}:`, predecessor)
+						unvisited.push(predecessor)
+					}
 				}
 
 				log('seen', seen.size)
+				log('set of seen', seen)
 
-				return seen.size
+				let withoutDir = new ValueSet<Vec2>(
+					[...seen].map((node) => parseVec(node.slice(0, -1)))
+				)
+
+				log('seen', withoutDir.size)
+				log('set of seen', withoutDir)
+
+				log('grid\n' + gridPrint(grid, 'O', withoutDir))
+
+				return withoutDir.size
 				// log('shortest', printNode(node))
 
-				return 0
+				// return 0
 			}
 		}
 
@@ -225,6 +264,9 @@ function solve(input: string, part = 1) {
 		if (isValidPos(straight)) {
 			let currDist = getDistance(straight)
 			let newDist = nearestNodeDistance + 1
+			if (newDist == currDist) {
+				addOptimalPredecessor(straight, nearestNode)
+			}
 			if (newDist < currDist) {
 				// 	log(
 				// 		'New shortest path to',
@@ -234,14 +276,14 @@ function solve(input: string, part = 1) {
 				// 		'(go straight)'
 				// 	)
 				setDistance(straight, newDist)
-				optimalPredecessors.set(
-					printNode(straight),
-					printNode(nearestNode)
-				)
+				addOptimalPredecessor(straight, nearestNode, true)
 			}
 		}
 		let currDistLeft = getDistance(left)
 		let newDistLeft = nearestNodeDistance + 1000
+		if (newDistLeft === currDistLeft) {
+			addOptimalPredecessor(left, nearestNode)
+		}
 		if (newDistLeft < currDistLeft) {
 			// log(
 			// 	'New shortest path to',
@@ -252,7 +294,7 @@ function solve(input: string, part = 1) {
 			// )
 
 			setDistance(left, newDistLeft)
-			optimalPredecessors.set(printNode(left), printNode(nearestNode))
+			addOptimalPredecessor(left, nearestNode, true)
 		}
 
 		let currDistRight = getDistance(right)
@@ -261,6 +303,9 @@ function solve(input: string, part = 1) {
 		// 	log('1,11R', { currDistRight, newDistRight })
 		// }
 
+		if (newDistRight === currDistRight) {
+			addOptimalPredecessor(right, nearestNode)
+		}
 		if (newDistRight < currDistRight) {
 			// log(
 			// 	'New shortest path to',
@@ -271,7 +316,7 @@ function solve(input: string, part = 1) {
 			// )
 
 			setDistance(right, newDistRight)
-			optimalPredecessors.set(printNode(right), printNode(nearestNode))
+			addOptimalPredecessor(right, nearestNode, true)
 		}
 
 		gridSet(seen, [nearestNode[0], nearestNode[1]], 'X')
@@ -318,6 +363,10 @@ function solve(input: string, part = 1) {
 
 assert(solve(test), 7036)
 assert(solve(test2), 11048)
-// assert(solve(input), 111480)
+assert(solve(input), 111480)
 
-assert(solve(test, 2), 1)
+assert(solve(test, 2), 45)
+assert(solve(test2, 2), 64)
+assert(solve(input, 2), 529)
+
+log('ok')
