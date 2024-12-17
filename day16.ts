@@ -308,7 +308,7 @@ function solve(input: string, part: 1 | 2 = 1) {
 			let previousDistance = getDistance(node)
 			if (distance <= previousDistance) {
 				setDistance(node, distance)
-				addQueue(node, distance)
+				addQueue(node /*, distance*/)
 				addOptimalPredecessor(
 					node,
 					nearestNode,

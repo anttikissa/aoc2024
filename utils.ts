@@ -50,8 +50,13 @@ export function assert(a: unknown, b?: unknown) {
 		if (!a) {
 			throw new Error(`expected ${a} to be truthy`)
 		}
-	} else if (a !== b) {
-		throw new Error(`expected ${a} to equal ${b}`)
+	} else {
+		if (typeof a === 'object' && typeof b === 'object') {
+			;[a, b] = [JSON.stringify(a), JSON.stringify(b)]
+		}
+		if (a !== b) {
+			throw new Error(`expected ${a} to equal ${b}`)
+		}
 	}
 }
 
