@@ -127,7 +127,12 @@ function printState(regs: number[], mem: number[]) {
 
 // printState()
 
-function run(regs: number[], mem: number[], debug = false) {
+function run(
+	regs: number[],
+	mem: number[],
+	debug = false,
+	expectedOut?: number[]
+) {
 	// let pc = 0
 
 	let out: number[] = []
@@ -137,7 +142,19 @@ function run(regs: number[], mem: number[], debug = false) {
 	}
 
 	while (true) {
+		let outLength = out.length
 		let result = step(regs, mem, out)
+		let outLengthAfter = out.length
+		if (expectedOut) {
+			if (outLengthAfter > outLength) {
+				if (
+					out[outLengthAfter - 1] !== expectedOut[outLengthAfter - 1]
+				) {
+					break
+				}
+			}
+		}
+
 		if (result === 'halt') {
 			break
 		}
@@ -220,13 +237,13 @@ function solve(input: string, part: 1 | 2 = 1) {
 	}
 
 	if (part === 2) {
-		for (let i = 0; i < 1000000; i++) {
+		for (let i = 0; i < 100000000000; i++) {
 			let mem = [...memOrig]
 			let regs = [...regsOrig]
 
 			// let i = 117440
 			regs[0] = i
-			let out = run(regs, mem, i % 1000 === 0)
+			let out = run(regs, mem, i % 100000 === 0, memOrig)
 
 			if (equals(memOrig, out)) {
 				return i
@@ -239,5 +256,6 @@ assert(solve(test), '4,6,3,5,6,3,5,2,1,0')
 assert(solve(input), '1,5,0,5,2,0,1,3,5')
 
 assert(solve(test2, 2), 117440)
+assert(solve(input, 2), 1234567)
 
 log('ok')
