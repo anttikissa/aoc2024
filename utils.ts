@@ -8,6 +8,36 @@ export function log(...args: unknown[]) {
 	let t = new Date().toISOString().replace('T', ' ').replace('Z', '')
 	let result: string[] = []
 
+	function printArray(arg: unknown[]) {
+		let result = '['
+		for (let i = 0; i < arg.length; i++) {
+			result += print(arg[i])
+			if (i < arg.length - 1) {
+				result += ', '
+			}
+		}
+		result += ']'
+		return result
+	}
+
+	function printObject(arg: object | null) {
+		if (arg === null) {
+			return 'null'
+		}
+
+		let result = '{'
+		let keys = Object.keys(arg)
+		for (let i = 0; i < keys.length; i++) {
+			let key = keys[i]
+			let value = arg[key]
+			result += `${key}: ${print(value)}`
+			if (i < keys.length - 1) {
+				result += ', '
+			}
+		}
+		result += '}'
+		return result
+	}
 	function print(arg: unknown) {
 		let str = ''
 		if (typeof arg === 'object') {
@@ -18,13 +48,17 @@ export function log(...args: unknown[]) {
 				str = 'new Map("TODO")'
 			} else if (arg instanceof Error) {
 				str = '[ERROR] ' + arg.message
+			} else if (Array.isArray(arg)) {
+				str = printArray(arg)
 			} else {
-				str = JSON.stringify(arg)
+				str = printObject(arg)
 			}
 		} else if (typeof arg === 'string') {
 			str = arg
 		} else if (typeof arg === 'number') {
 			str = arg.toString()
+		} else if (typeof arg === 'bigint') {
+			str = arg.toString() + 'n'
 		} else {
 			str = String(arg)
 		}
