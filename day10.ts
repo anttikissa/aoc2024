@@ -1,5 +1,4 @@
 import {
-	vecAdd,
 	coords,
 	gridGet,
 	gridIsWithin,
@@ -8,6 +7,7 @@ import {
 	toGrid,
 	uniqueCount,
 	type Vec2,
+	vecAdd,
 } from './utils.ts'
 
 // @ts-ignore
@@ -71,7 +71,7 @@ let trailheads = [
 // log({ grid, trailheads })
 
 // Array of all tops reachable from pos
-function countTops(pos: Vec2, pos2?: Vec2): Vec2[] {
+function countTops(pos: Vec2): Vec2[] {
 	let height = gridGet(grid, pos)
 	if (height === '.') {
 		return []
@@ -88,9 +88,7 @@ function countTops(pos: Vec2, pos2?: Vec2): Vec2[] {
 		)
 	})
 
-	let tops = legitPositions.flatMap((pos) => countTops(pos, pos2 ?? pos))
-
-	return tops
+	return legitPositions.flatMap((pos) => countTops(pos))
 }
 
 // part 1
