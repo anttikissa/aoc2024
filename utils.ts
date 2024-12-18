@@ -267,8 +267,15 @@ export function vecMul([a, b]: Vec2, x: number): Vec2 {
 	return [a * x, b * x]
 }
 
+export function gridCreate<T>(width: number, height: number, fill: T) {
+	return Array(height)
+		.fill(0)
+		.map(() => Array(width).fill(fill))
+}
+
+// TODO make '.' a default node of custom type
 export function gridGet<T>(grid: T[][], [x, y]: Vec2) {
-	return grid[y]?.[x] || '.'
+	return grid[y]?.[x] ?? '.'
 }
 
 export function gridMap<T, U>(grid: T[][], fn: (value: T) => U) {
@@ -283,8 +290,9 @@ export function gridMap<T, U>(grid: T[][], fn: (value: T) => U) {
 	return result
 }
 
-export function gridSet(grid: string[][], [x, y]: Vec2, value: string) {
+export function gridSet<T>(grid: T[][], [x, y]: Vec2, value: T) {
 	if (!gridIsWithin([x, y], grid)) {
+		throw new Error('gridset outside' + x + y)
 		log('gridSet outside', [x, y])
 		return
 	}
@@ -308,7 +316,7 @@ export function gridHeight(grid: string[][]) {
 	return grid.length
 }
 
-export function gridIsWithin([x, y]: Vec2, grid: string[][]) {
+export function gridIsWithin<T>([x, y]: Vec2, grid: T[][]) {
 	return y >= 0 && y < grid.length && x >= 0 && x < grid[0].length
 }
 

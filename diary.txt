@@ -93,3 +93,6 @@ Total time: 0:19:22
 Total time: 0:13:48
 
 2:
+
+1: Forgot to measure (under 40 minutes)
+2: Likewise (under 30 minutes)
