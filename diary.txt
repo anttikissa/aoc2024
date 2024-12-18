@@ -18,10 +18,15 @@ Day 4:
 1: Total time: 0:46:00 (wrong approach)
 2: Total time: 0:08:06
 
+- JS weakness: operator overloading would be nice when handling coordinates
+
 Day 5:
 
 1: Total time: 0:11:17
 2: Total time: forgot to start timer, maybe 5 minutes?
+
+- JS weakness: first time that I missed a Set that would take objects and would
+compare them by value, not by reference (later I would implement ValueSet)
 
 Day 6:
 
@@ -84,6 +89,8 @@ it in my head on way to work:
 1: Total time: 2:40:59
 2: Total time: 0:53:23
 
+- JS weakness: Dijkstra needs priority queue, not available in standard library
+
 17:
 
 1: Done in parts
@@ -91,8 +98,14 @@ Total time: 0:17:28
 Then some 10 minutes
 Total time: 0:19:22
 Total time: 0:13:48
+2: Took forever
 
-2:
+- JS weakness: xor truncates its arguments to 32 bits so started to use BigInts
+almost everywhere (a xor function would have been enough)
+
+18:
 
 1: Forgot to measure (under 40 minutes)
 2: Likewise (under 30 minutes)
+
+- JS weakness: binary search would be nice to make part 2 faster
