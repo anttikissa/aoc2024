@@ -1,6 +1,6 @@
 // @ts-ignore
 import input from './day19.txt'
-import { assert, cache, log } from './utils.ts'
+import { assert, cache, log, sum, timer } from './utils.ts'
 let test = `
 r, wr, b, g, bwu, rb, gb, br
 
@@ -20,10 +20,10 @@ function solve(input: string) {
 	let patterns = parts[0].split(', ')
 	let designs = parts[1].split('\n')
 
-	log('patterns', patterns.length)
-	log('designs', designs.length)
+	// log('patterns', patterns.length)
+	// log('designs', designs.length)
 
-	function possible(design: string) {
+	let possible = (design: string) => {
 		if (design === '') {
 			return true
 		}
@@ -41,57 +41,71 @@ function solve(input: string) {
 		return false
 	}
 
+	possible = cache(possible)
+
 	return designs.filter(possible).length
 }
 
-function solve2(input: string) {
+function solve2(input: string, part: 1 | 2 = 1) {
 	let parts = input.trim().split('\n\n')
 
 	let patterns = parts[0].split(', ')
 	let designs = parts[1].split('\n')
 
-	log('patterns', patterns.length)
-	log('designs', designs.length)
+	// log('patterns', patterns.length)
+	// log('designs', designs.length)
 
 	let patternsByColor = Object.groupBy(patterns, (pattern) => pattern[0])
 
-	log('patternsByColor', patternsByColor)
-
-	let possible = (design: string, advance: number = 0) => {
-		log('check design', { design, advance })
-
+	let possibilities = (design: string) => {
 		if (design === '') {
-			return true
+			return 1
 		}
 
 		let first = design[0]
 
+		let ways = 0
+		// Speedup from this is about 260 ms -> 80 ms (roughly as expected)
+		// for (let pattern of patterns) {
 		for (let pattern of patternsByColor[first] || []) {
 			if (design.startsWith(pattern)) {
-				if (
-					possible(
-						design.slice(pattern.length),
-						advance + pattern.length
-					)
-				) {
-					return true
-				}
+				ways += possibilities(design.slice(pattern.length))
 			}
 		}
 
-		return false
+		return ways
 	}
 
-	possible = cache(possible)
+	possibilities = cache(possibilities)
 
-	return designs.filter((design) => {
-		log('checking', design)
+	if (part === 1) {
+		return designs.filter((design) => {
+			// log('checking', design)
 
-		return possible(design)
-	}).length
+			return possibilities(design) > 0
+		}).length
+	}
+
+	if (part === 2) {
+		return sum(designs.map(possibilities))
+	}
 }
 
 assert(solve(test), 6)
+assert(solve2(test), 6)
 assert(solve2(input), 317)
+
+assert(solve2(test, 2), 16)
+{
+	// [perf] solve2: 88 ms
+	using perf = timer('solve2')
+	assert(solve2(input, 2), 883443544805484)
+}
+
+{
+	// [perf] testSplitMemoized: 9611 ms
+	// using perf = timer('testSplitMemoized')
+	// assert(solve(input), 317)
+}
 
 log('ok')
