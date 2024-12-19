@@ -11,7 +11,7 @@ export function log(...args: unknown[]) {
 	function printArray(arg: unknown[]) {
 		let result = '['
 		for (let i = 0; i < arg.length; i++) {
-			result += print(arg[i])
+			result += print(arg[i], true)
 			if (i < arg.length - 1) {
 				result += ', '
 			}
@@ -30,7 +30,7 @@ export function log(...args: unknown[]) {
 		for (let i = 0; i < keys.length; i++) {
 			let key = keys[i]
 			let value = arg[key]
-			result += `${key}: ${print(value)}`
+			result += `${key}: ${print(value, true)}`
 			if (i < keys.length - 1) {
 				result += ', '
 			}
@@ -38,7 +38,8 @@ export function log(...args: unknown[]) {
 		result += '}'
 		return result
 	}
-	function print(arg: unknown) {
+
+	function print(arg: unknown, includeQuotes = false) {
 		let str = ''
 		if (typeof arg === 'object') {
 			if (arg instanceof Set) {
@@ -54,7 +55,11 @@ export function log(...args: unknown[]) {
 				str = printObject(arg)
 			}
 		} else if (typeof arg === 'string') {
-			str = arg
+			if (includeQuotes) {
+				str = "'" + arg + "'"
+			} else {
+				str = arg
+			}
 		} else if (typeof arg === 'number') {
 			str = arg.toString()
 		} else if (typeof arg === 'bigint') {
