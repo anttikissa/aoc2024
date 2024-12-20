@@ -164,7 +164,7 @@ export function pairs<T>(arr: T[]) {
 }
 
 // [1,2,3] => [[1,2], [2,3]]
-export function adjacents(arr: number[]) {
+export function adjacents<T>(arr: T[]): [T, T][] {
 	return range(arr.length - 1).map((i) => [arr[i], arr[i + 1]])
 }
 

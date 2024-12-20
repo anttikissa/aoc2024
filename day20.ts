@@ -2,6 +2,7 @@
 import input from './day20.txt'
 
 import {
+	adjacents,
 	assert,
 	coords,
 	fail,
@@ -49,7 +50,12 @@ function dijkstra<Node>(
 ) {
 	let unvisited = [initial]
 	let queuePos = 0
+
 	// let unvisited = new Set<Node>([initial])
+
+	function hasMore() {
+		return queuePos < unvisited.length
+	}
 
 	function pop(): Node {
 		if (queuePos >= unvisited.length) {
@@ -61,6 +67,29 @@ function dijkstra<Node>(
 		// let sorted = [...unvisited].sort((a, b) => distance(a) - distance(b))
 		// unvisited.delete(sorted[0])
 		// return sorted[0]
+	}
+
+	function enqueue(node: Node) {
+		// let dist = distance(node)
+		// let allDistances = unvisited.map(distance)
+
+		unvisited.push(node)
+		// Keep the array in order
+		if (unvisited.length >= 2) {
+			let previous = unvisited[unvisited.length - 2]
+			if (distance(node) < distance(previous)) {
+				unvisited.sort((a, b) => distance(a) - distance(b))
+			}
+		}
+
+		// let isOrdered = adjacents(unvisited).every(
+		// 	([a, b]) => distance(a) <= distance(b)
+		// )
+		// if (!isOrdered) {
+		// 	log('unvisited is not ordered', unvisited)
+		// 	log('unvisited is not ordered', unvisited.map(distance))
+		// 	fail('^^')
+		// }
 	}
 
 	function addOptimalPredecessor(
@@ -84,7 +113,7 @@ function dijkstra<Node>(
 		}
 	}
 
-	while (unvisited.length) {
+	while (hasMore()) {
 		let nearest = pop()
 		let nearestDistance = distance(nearest)
 
@@ -102,7 +131,7 @@ function dijkstra<Node>(
 			if (newDistance < previousDistance) {
 				// if (newDistance <= previousDistance) {
 				updateDistance(pos, newDistance)
-				unvisited.push(pos)
+				enqueue(pos)
 				addOptimalPredecessor(
 					pos,
 					nearest,
@@ -117,8 +146,6 @@ function dijkstra<Node>(
 
 // TODO allow doing `maxHop` moves without wall checks once during the solution
 function solve(input: string, maxHop: number, mustSaveAtLeast: number) {
-	assert(maxHop === 2)
-
 	let grid = toGrid(input)
 
 	let start = coords(grid).find((c) => gridGet(grid, c) === 'S')!
@@ -150,12 +177,9 @@ function solve(input: string, maxHop: number, mustSaveAtLeast: number) {
 	)
 
 	// Start node:
-	let cheatStart = { pos: start, cheatUsed: false, cheatLeft: 2 }
+	let cheatStart = { pos: start, cheatUsed: false }
 
-	// Transitions: (cheatUsed: false || cheatLeft: 0), pos -> pos to valid position, cost: 1
-	// Transitions: (cheatUsed: true && cheatLeft > 0), pos -> pos to any position, cheatLeft--, cost: 1
-	// Transitions: cheatUsed: false -> cheatUsed: true, cost: 0
-	type Node = { pos: Vec2; cheatUsed: boolean; cheatLeft: number }
+	type Node = { pos: Vec2; cheatUsed: boolean }
 	let cheatDistances: Map<string, number>
 
 	function cheatGetDistance(node: Node) {
@@ -166,7 +190,19 @@ function solve(input: string, maxHop: number, mustSaveAtLeast: number) {
 		cheatDistances.set(JSON.stringify(node), distance)
 	}
 
-	let bannedNodes = new ValueSet<Node>()
+	let bannedHops = new Set<number>()
+
+	// function encodeHop(a, b) {
+	// 	return JSON.stringify([a, b])
+	// }
+
+	// Words for grids smaller than 256 x 256
+	function encodeHop([a, b]: Vec2, [c, d]: Vec2) {
+		if (a < 0 || a >= 256 || b < 0 || b >= 256) {
+			fail('cannot encode', { a, b, c, d })
+		}
+		return a * 256 ** 3 + b * 256 ** 2 + c * 256 + d
+	}
 
 	function neighbors(pos: Vec2, maxHop: number) {
 		let result = []
@@ -175,11 +211,16 @@ function solve(input: string, maxHop: number, mustSaveAtLeast: number) {
 				if (i === 0 && j === 0) {
 					continue
 				}
-				if (Math.abs(i) + Math.abs(j) <= maxHop) {
+				let cost = Math.abs(i) + Math.abs(j)
+				if (cost <= maxHop) {
 					let neighbor = vecAdd(pos, [i, j])
+
 					if (gridIsWithin(neighbor, grid)) {
 						if (gridGet(grid, neighbor) !== '#') {
-							result.push(neighbor)
+							let encodedHop = encodeHop(pos, neighbor)
+							if (!bannedHops.has(encodedHop)) {
+								result.push({ pos: neighbor, cost })
+							}
 						}
 					}
 				}
@@ -188,56 +229,37 @@ function solve(input: string, maxHop: number, mustSaveAtLeast: number) {
 		return result
 	}
 
-	log('neighbors', neighbors([5, 5], 4))
+	// log('neighbors', neighbors([2, 1], 4))
 
+	// Transitions: (cheatUsed: false) -> pos to any pos in neighbors(maxHop), cheatUsed: true, cost: cost(hops),
+	// Transitions: (cheatUsed: true) -> pos to any pos in neighbors(1), cost: 1
 	function cheatTransitions(node: Node): { pos: Node; cost: number }[] {
 		let result: { pos: Node; cost: number }[] = []
-		let cheatActivated = false
+		// let cheatActivated = false
 
-		if (node.cheatUsed && node.cheatLeft > 0) {
-			cheatActivated = true
-		}
-		let neighbors = straightDirections.map((dir) => vecAdd(node.pos, dir))
-		for (let neighbor of neighbors) {
-			if (gridIsWithin(neighbor, grid)) {
-				// Using cheat; in this case, we must use the cheat
-				// First step (cheatLeft: 2), we can move through a wall
-				if (cheatActivated && node.cheatLeft == 2) {
-					let newNode: Node = {
-						...node,
-						pos: neighbor,
-						cheatLeft: node.cheatLeft - 1,
-					}
-					if (!bannedNodes.has(newNode)) {
-						result.push({ pos: newNode, cost: 1 })
-					}
-				} else {
-					// Not using cheat; normal moves
-					if (gridGet(grid, neighbor) !== '#') {
-						let cheatLeft = node.cheatLeft
-						if (cheatActivated && node.cheatLeft === 1) {
-							// Second move of cheating is normal but uses up the cheat
-							cheatLeft = 0
-						}
-						let newNode = {
-							...node,
-							cheatLeft,
-							pos: neighbor,
-						}
-						result.push({ pos: newNode, cost: 1 })
-					}
-				}
+		// if (node.cheatUsed && node.cheatLeft > 0) {
+		// 	cheatActivated = true
+		// }
+		// Normal case; move to any adjacent available spot
+		for (let neighbor of neighbors(node.pos, 1)) {
+			let newNode: Node = {
+				...node,
+				pos: neighbor.pos,
 			}
+			assert(neighbor.cost === 1)
+			result.push({ pos: newNode, cost: 1 })
 		}
-		// Not using cheat; activate cheat
+
 		if (!node.cheatUsed) {
-			assert(node.cheatLeft === 2)
-			let newNode = { ...node, cheatUsed: true }
-			// Not sure if these can be ever banned but anyway
-			result.push({
-				pos: newNode,
-				cost: 0,
-			})
+			// Or, if we haven't cheated, we can hop to a neighbor at most maxHop away
+			for (let neighbor of neighbors(node.pos, maxHop)) {
+				let newNode: Node = {
+					...node,
+					pos: neighbor.pos,
+					cheatUsed: true,
+				}
+				result.push({ pos: newNode, cost: neighbor.cost })
+			}
 		}
 
 		return result
@@ -249,7 +271,12 @@ function solve(input: string, maxHop: number, mustSaveAtLeast: number) {
 	}
 
 	log('baseline', baseline)
+
+	let saves = {}
+
 	let cheatSolutions = 0
+	let allSolutions = []
+
 	while (true) {
 		let optimalPredecessors = new Map<string, string[]>()
 
@@ -266,6 +293,12 @@ function solve(input: string, maxHop: number, mustSaveAtLeast: number) {
 			optimalPredecessors
 		)
 
+		if (fastestWithCheat === Infinity) {
+			log('INFINITY REACHED')
+			log('All solutions so far', allSolutions)
+			log('bannedHops', bannedHops)
+			// log('cheatDistances', cheatDistances)
+		}
 		// log('fastest with cheats', fastestWithCheat)
 		// log('fastest with cheats', optimalPredecessors)
 
@@ -285,15 +318,16 @@ function solve(input: string, maxHop: number, mustSaveAtLeast: number) {
 			}
 
 			let nextParsed = JSON.parse(nextNode)
-			if (nextParsed.cheatLeft === 1) {
-				// log('Banning', nextParsed)
-				bannedNodes.add(nextParsed)
-			}
 
 			assert(node.length === 1)
 
 			let previousNode = node[0]
 			path.push(previousNode)
+
+			let previousParsed = JSON.parse(previousNode)
+			if (nextParsed.cheatUsed && !previousParsed.cheatUsed) {
+				bannedHops.add(encodeHop(previousParsed.pos, nextParsed.pos))
+			}
 
 			nextNode = previousNode
 
@@ -306,25 +340,57 @@ function solve(input: string, maxHop: number, mustSaveAtLeast: number) {
 		// log('path', positions.reverse())
 		// log('cheat solution:\n' + gridPrint(grid, 'O', positions))
 
+		// log('baseline is still', baseline)
 		let save = baseline - fastestWithCheat
-		log(`cheat solution took ${fastestWithCheat} moves, saves`, save)
+		// log(`cheat solution took ${fastestWithCheat} moves, saves`, save)
 
 		if (save < mustSaveAtLeast) {
+			log(
+				`No more solutions, save ${save}, must save at least ${mustSaveAtLeast}`
+			)
 			break
 		}
+
+		// @ts-ignore debugging
+		saves[save] = (saves[save] ?? 0) + 1
 		cheatSolutions++
+		allSolutions.push(fastestWithCheat)
 		if (cheatSolutions % 10 === 0) {
 			log(`Found ${cheatSolutions} solutions`)
 		}
 	}
+	let savesKeys = Object.keys(saves)
+		.map(Number)
+		.sort((a, b) => a - b)
+
+	log(
+		'saves',
+		'\n' +
+			savesKeys
+				.map(
+					(key) =>
+						`There are ${saves[key]} cheats that save ${key} picoseconds.`
+				)
+				.join('\n')
+	)
 
 	return cheatSolutions
 }
 
 {
 	// Original: 100 ms
-	using perf = timer('test')
-	assert(solve(test, 2, 1), 44)
+	// Shaved down to 40 ms
+	// using perf = timer('test')
+	// assert(solve(test, 2, 1), 44)
 }
 
-// assert(solve(input, 100), 1263)
+{
+	// 1.4 s
+	// using perf = timer('test with maxHop 20')
+	// assert(solve(test, 20, 50), 285)
+}
+
+// Takes a long time
+// assert(solve(input, 2, 100), 1263)
+
+assert(solve(input, 20, 100), 10000)
