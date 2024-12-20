@@ -4,6 +4,7 @@ import input from './day20.txt'
 import {
 	assert,
 	coords,
+	fail,
 	gridGet,
 	gridIsWithin,
 	gridMap,
@@ -11,6 +12,7 @@ import {
 	gridSet,
 	log,
 	straightDirections,
+	timer,
 	toGrid,
 	ValueSet,
 	type Vec2,
@@ -45,12 +47,20 @@ function dijkstra<Node>(
 	// the preceding node is recorded here
 	optimalPredecessors?: Map<string, string[]>
 ) {
-	let unvisited = new Set<Node>([initial])
+	let unvisited = [initial]
+	let queuePos = 0
+	// let unvisited = new Set<Node>([initial])
 
-	function pop() {
-		let sorted = [...unvisited].sort((a, b) => distance(a) - distance(b))
-		unvisited.delete(sorted[0])
-		return sorted[0]
+	function pop(): Node {
+		if (queuePos >= unvisited.length) {
+			fail('popped too much')
+		}
+		return unvisited[queuePos++]
+
+		// return unvisited.shift()!
+		// let sorted = [...unvisited].sort((a, b) => distance(a) - distance(b))
+		// unvisited.delete(sorted[0])
+		// return sorted[0]
 	}
 
 	function addOptimalPredecessor(
@@ -65,7 +75,6 @@ function dijkstra<Node>(
 		let predecessor = JSON.stringify(predecessorN)
 		if (optimalPredecessors.has(node)) {
 			if (wipe) {
-				log('PUSING', [predecessor])
 				optimalPredecessors.set(node, [predecessor])
 			} else {
 				optimalPredecessors.get(node)!.push(predecessor)
@@ -75,7 +84,7 @@ function dijkstra<Node>(
 		}
 	}
 
-	while (unvisited.size) {
+	while (unvisited.length) {
 		let nearest = pop()
 		let nearestDistance = distance(nearest)
 
@@ -93,7 +102,7 @@ function dijkstra<Node>(
 			if (newDistance < previousDistance) {
 				// if (newDistance <= previousDistance) {
 				updateDistance(pos, newDistance)
-				unvisited.add(pos)
+				unvisited.push(pos)
 				addOptimalPredecessor(
 					pos,
 					nearest,
@@ -106,11 +115,14 @@ function dijkstra<Node>(
 	return Infinity
 }
 
-function solve(input: string, mustSaveAtLeast: number) {
+// TODO allow doing `maxHop` moves without wall checks once during the solution
+function solve(input: string, maxHop: number, mustSaveAtLeast: number) {
+	assert(maxHop === 2)
+
 	let grid = toGrid(input)
 
 	let start = coords(grid).find((c) => gridGet(grid, c) === 'S')!
-	let end = coords(grid).find((c) => gridGet(grid, c) === 'E')!
+	// let end = coords(grid).find((c) => gridGet(grid, c) === 'E')!
 
 	// log('print\n' + gridPrint(grid), start, end)
 
@@ -155,6 +167,28 @@ function solve(input: string, mustSaveAtLeast: number) {
 	}
 
 	let bannedNodes = new ValueSet<Node>()
+
+	function neighbors(pos: Vec2, maxHop: number) {
+		let result = []
+		for (let i = -maxHop; i <= maxHop; ++i) {
+			for (let j = -maxHop; j <= maxHop; ++j) {
+				if (i === 0 && j === 0) {
+					continue
+				}
+				if (Math.abs(i) + Math.abs(j) <= maxHop) {
+					let neighbor = vecAdd(pos, [i, j])
+					if (gridIsWithin(neighbor, grid)) {
+						if (gridGet(grid, neighbor) !== '#') {
+							result.push(neighbor)
+						}
+					}
+				}
+			}
+		}
+		return result
+	}
+
+	log('neighbors', neighbors([5, 5], 4))
 
 	function cheatTransitions(node: Node): { pos: Node; cost: number }[] {
 		let result: { pos: Node; cost: number }[] = []
@@ -273,7 +307,7 @@ function solve(input: string, mustSaveAtLeast: number) {
 		// log('cheat solution:\n' + gridPrint(grid, 'O', positions))
 
 		let save = baseline - fastestWithCheat
-		// log(`cheat solution took ${fastestWithCheat} moves, saves`, save)
+		log(`cheat solution took ${fastestWithCheat} moves, saves`, save)
 
 		if (save < mustSaveAtLeast) {
 			break
@@ -287,5 +321,10 @@ function solve(input: string, mustSaveAtLeast: number) {
 	return cheatSolutions
 }
 
-assert(solve(test, 1), 44)
-assert(solve(input, 100), 1263)
+{
+	// Original: 100 ms
+	using perf = timer('test')
+	assert(solve(test, 2, 1), 44)
+}
+
+// assert(solve(input, 100), 1263)
