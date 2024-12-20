@@ -46,7 +46,7 @@ export function log(...args: unknown[]) {
 				let contents = print([...arg])
 				str = `new Set(${contents})`
 			} else if (arg instanceof Map) {
-				str = 'new Map("TODO")'
+				str = 'new Map(' + print([...arg]) + ')'
 			} else if (arg instanceof Error) {
 				str = '[ERROR] ' + arg.message
 			} else if (Array.isArray(arg)) {
@@ -321,6 +321,7 @@ export function gridHeight(grid: string[][]) {
 	return grid.length
 }
 
+// TODO swap order
 export function gridIsWithin<T>([x, y]: Vec2, grid: T[][]) {
 	return y >= 0 && y < grid.length && x >= 0 && x < grid[0].length
 }
