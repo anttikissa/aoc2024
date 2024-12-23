@@ -283,6 +283,13 @@ export function gridGet<T>(grid: T[][], [x, y]: Vec2) {
 	return grid[y]?.[x] ?? '.'
 }
 
+export function gridFind<T>(grid: T[][], fn: (value: T) => boolean) {
+	for (let pos of coords(grid)) {
+		if (fn(gridGet(grid, pos) as T)) {
+			return pos
+		}
+	}
+}
 export function gridMap<T, U>(grid: T[][], fn: (value: T) => U) {
 	let result = []
 	for (let row of grid) {
@@ -481,6 +488,15 @@ export function sum(numbers: number[]) {
 	return numbers.reduce((a, b) => a + b, 0)
 }
 
+export function max(numbers: number[]) {
+	let highest = -Infinity
+	for (let num of numbers) {
+		if (num > highest) {
+			highest = num
+		}
+	}
+	return highest
+}
 //
 // Caching
 //
