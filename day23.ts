@@ -78,6 +78,13 @@ function solve(input: string, part: 1 | 2 = 1) {
 	}
 
 	if (part === 2) {
+		// This information would have been useful:
+		// log('nodes', nodes)
+		// log('connections', connections)
+		// for (let [n, c] of connections) {
+		// 	log('nc', { n, l: c.length })
+		// }
+
 		function findLargestClique(): string[] {
 			// Convert nodes set to array for easier manipulation
 			const nodeArray = Array.from(nodes)
