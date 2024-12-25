@@ -2,12 +2,14 @@ import input from './day25.txt' with { type: 'text' }
 
 import {
 	assert,
+	coords,
 	gridColumns,
 	gridGet,
 	gridHeight,
 	gridPrint,
 	log,
 	range,
+	timer,
 	toGrid,
 } from './utils'
 
@@ -65,40 +67,66 @@ function solve(input: string) {
 		}
 	}
 
-	let ls = locks.map((lock) =>
-		gridColumns(lock).map((col) => col.lastIndexOf('#'))
-	)
+	log('locks', locks.length)
+	log('keys', keys.length)
 
-	let ks = keys.map((key) =>
-		gridColumns(key).map((col) => gridHeight(key) - col.indexOf('#') - 1)
-	)
-
-	let h = gridHeight(locks[0])
-	assert(h, gridHeight(keys[0]))
-
-	log('ls', ls.length)
-	log('ks', ks.length)
+	// Problem set size: 250 x 250 so we can use any solution we like
+	let solution = 'shorter'
 
 	let result = 0
-	for (let key of ks) {
-		for (let lock of ls) {
-			let match = 1
-			for (let i of range(key.length)) {
-				if (key[i] + lock[i] >= h - 1) {
-					match = 0
-					break
+
+	if (solution === 'shorter') {
+		function fits(key: string[][], lock: string[][]) {
+			return !coords(key).some(
+				(coord) =>
+					gridGet(key, coord) === '#' && gridGet(lock, coord) === '#'
+			)
+		}
+
+		for (let key of keys) {
+			for (let lock of locks) {
+				if (fits(key, lock)) {
+					result++
 				}
 			}
-			result += match
-			// if (match) {
-			// 	log('match, key', key)
-			// 	log('lock', lock)
-			// }
 		}
-	}
 
-	return result
+		return result
+	} else if (solution === 'faster') {
+		// The first solution I came up with
+		let ls = locks.map((lock) =>
+			gridColumns(lock).map((col) => col.lastIndexOf('#'))
+		)
+
+		let ks = keys.map((key) =>
+			gridColumns(key).map(
+				(col) => gridHeight(key) - col.indexOf('#') - 1
+			)
+		)
+
+		let h = gridHeight(locks[0])
+		assert(h, gridHeight(keys[0]))
+
+		result = 0
+		for (let key of ks) {
+			for (let lock of ls) {
+				let match = 1
+				for (let i of range(key.length)) {
+					if (key[i] + lock[i] >= h - 1) {
+						match = 0
+						break
+					}
+				}
+				result += match
+			}
+		}
+
+		return result
+	}
 }
 
 assert(solve(test), 3)
-assert(solve(input), 3365)
+{
+	using perf = timer('input')
+	assert(solve(input), 3365)
+}
