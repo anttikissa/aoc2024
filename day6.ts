@@ -2,7 +2,7 @@ import {
 	vecAdd,
 	coords,
 	gridGet,
-	gridIsWithin,
+	gridWithinIs,
 	gridSet,
 	log,
 	readFile,
@@ -82,7 +82,7 @@ function step(grid: string[][]) {
 
 	let nextPos = vecAdd(guardPos, dirs[currentDir])
 
-	if (!gridIsWithin(nextPos, grid)) {
+	if (!gridWithinIs(nextPos, grid)) {
 		// Next pos out of bounds -> quit
 		return true
 	}

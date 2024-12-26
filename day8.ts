@@ -2,7 +2,7 @@ import {
 	vecAdd,
 	coords,
 	gridGet,
-	gridIsWithin,
+	gridWithinIs,
 	pairs,
 	readFile,
 	vecSub,
@@ -62,10 +62,10 @@ for (let [freq, coords] of freqs) {
 		let diff = vecSub(pair[1], pair[0])
 		let anti1 = vecSub(pair[0], diff)
 		let anti2 = vecAdd(pair[1], diff)
-		if (gridIsWithin(anti1, grid)) {
+		if (gridWithinIs(anti1, grid)) {
 			antinodes.add(anti1.join(','))
 		}
-		if (gridIsWithin(anti2, grid)) {
+		if (gridWithinIs(anti2, grid)) {
 			antinodes.add(anti2.join(','))
 		}
 	}
@@ -81,14 +81,14 @@ for (let [freq, coords] of freqs) {
 		let diff = vecSub(pair[1], pair[0])
 		for (
 			let anti1 = pair[0];
-			gridIsWithin(anti1, grid);
+			gridWithinIs(anti1, grid);
 			anti1 = vecSub(anti1, diff)
 		) {
 			antinodes.add(anti1.join(','))
 		}
 		for (
 			let anti2 = pair[1];
-			gridIsWithin(anti2, grid);
+			gridWithinIs(anti2, grid);
 			anti2 = vecAdd(anti2, diff)
 		) {
 			antinodes.add(anti2.join(','))

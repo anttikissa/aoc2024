@@ -1,7 +1,7 @@
 import {
 	coords,
 	gridGet,
-	gridIsWithin,
+	gridWithinIs,
 	log,
 	straightDirections,
 	toGrid,
@@ -84,7 +84,7 @@ function countTops(pos: Vec2): Vec2[] {
 	let legitPositions = adjacentPositions.filter((pos) => {
 		return (
 			// @ts-ignore sloppy JS comparison
-			gridIsWithin(pos, grid) && gridGet(grid, pos) == Number(height) + 1
+			gridWithinIs(pos, grid) && gridGet(grid, pos) == Number(height) + 1
 		)
 	})
 

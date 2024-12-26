@@ -198,7 +198,12 @@ export const LEFT = [-1, 0] as Vec2
 export const UP = [0, -1] as Vec2
 export const RIGHT = [1, 0] as Vec2
 
+// Deprecated; use cardinalDirections instead
 export const straightDirections: Vec2[] = [DOWN, LEFT, UP, RIGHT]
+
+// This order might make more sense
+// Because [Math.cos(t), Math.sin(t)] follows the same direction
+export const cardinalDirections: Vec2[] = [RIGHT, DOWN, LEFT, UP]
 
 export const diagonalDirections: Vec2[] = [
 	[1, 1],
@@ -283,6 +288,21 @@ export function gridGet<T>(grid: T[][], [x, y]: Vec2) {
 	return grid[y]?.[x] ?? '.'
 }
 
+export function gridColumns(grid: string[][]) {
+	return range(grid[0].length).map((x) => grid.map((row) => row[x]))
+}
+
+assert(
+	gridColumns([
+		['a', 'b'],
+		['c', 'd'],
+	]),
+	[
+		['a', 'c'],
+		['b', 'd'],
+	]
+)
+
 export function gridFind<T>(grid: T[][], fn: (value: T) => boolean) {
 	for (let pos of coords(grid)) {
 		if (fn(gridGet(grid, pos) as T)) {
@@ -303,7 +323,7 @@ export function gridMap<T, U>(grid: T[][], fn: (value: T) => U) {
 }
 
 export function gridSet<T>(grid: T[][], [x, y]: Vec2, value: T) {
-	if (!gridIsWithin([x, y], grid)) {
+	if (!gridWithinIs([x, y], grid)) {
 		throw new Error('gridset outside' + x + y)
 		log('gridSet outside', [x, y])
 		return
@@ -329,7 +349,12 @@ export function gridHeight(grid: string[][]) {
 }
 
 // TODO swap order
-export function gridIsWithin<T>([x, y]: Vec2, grid: T[][]) {
+// Deprecated: this is the older one, renamed so existing uses continue to work
+export function gridWithinIs<T>([x, y]: Vec2, grid: T[][]) {
+	return y >= 0 && y < grid.length && x >= 0 && x < grid[0].length
+}
+
+export function gridIsWithin<T>(grid: T[][], [x, y]: Vec2) {
 	return y >= 0 && y < grid.length && x >= 0 && x < grid[0].length
 }
 

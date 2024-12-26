@@ -5,7 +5,7 @@ import {
 	fail,
 	gridCreate,
 	gridGet,
-	gridIsWithin,
+	gridWithinIs,
 	gridPrint,
 	gridSet,
 	log,
@@ -117,7 +117,7 @@ function solve(input: string, size: number, cut?: number, part: 1 | 2 = 1) {
 		let neighbors = straightDirections.map((dir) => vecAdd(pos, dir))
 		return neighbors
 			.filter((pos) => {
-				return gridIsWithin(pos, grid) && gridGet(grid, pos) !== '#'
+				return gridWithinIs(pos, grid) && gridGet(grid, pos) !== '#'
 			})
 			.map((pos) => ({ pos, cost: 1 }))
 	}
