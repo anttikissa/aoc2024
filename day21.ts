@@ -373,11 +373,9 @@ function unplay1(output: string) {
 	return result
 }
 
-let unplay2 = unplay1
-
 assert(unplay0('029B'), '<A^A^^>AvvvA')
 
-log('unplay', unplay1All('<A^A>^^AvvvA'))
+// log('unplay', unplay1All('<A^A>^^AvvvA'))
 
 // assert(unplay1('<A'), '<<vA>>^A')
 
@@ -394,6 +392,8 @@ function shortestFor(code: string, iterations = 2): string {
 	// return result[0].length
 }
 
+// ATTEMPT to solve part 2 by generating the optimal sequence
+// Starts to take too much memory soon
 function solve2(input: string, iterations = 2) {
 	let codes = toLines(input.replaceAll('A', 'B'))
 
@@ -404,6 +404,48 @@ function solve2(input: string, iterations = 2) {
 
 		log(code, shortestPath.length)
 		result += num * shortestPath.length
+	}
+
+	return result
+}
+
+// Final? attempt to solve
+
+function unplay1length(output: string, iterations: number): number {
+	if (iterations === 0) {
+		return output.length
+	}
+
+	let pairs = adjacents([...('A' + output)])
+
+	let result = 0
+
+	for (let [a, b] of pairs) {
+		// let shortests = shortestPaths(a, b)
+		// shortests = shortests.map((x) => x + 'A')
+		// let shortest = pickOptimal(shortests)
+		// TOOD call unplay1length recursively
+		// result = result + shortestLength
+	}
+
+	return result
+}
+
+function shortestFor3(code: string, iterations = 2) {
+	// TODO look at shortestFor, inline, make recursive, change to calculate length instead
+	// use unplay1length
+	return 0
+}
+
+function solve3(input: string, iterations = 2) {
+	let codes = toLines(input.replaceAll('A', 'B'))
+
+	let result = 0
+	for (let code of codes) {
+		let num = parseInt(code)
+		let shortestPathLength = shortestFor3(code, iterations)
+
+		result += num * shortestPathLength
 	}
 
 	return result
@@ -427,7 +469,13 @@ let test = `
 }
 
 {
-	using perf = timer('solve2 too heavy?')
+	using perf = timer('solve3 test')
+	assert(solve3(test), 126384)
+}
+
+{
+	// using perf = timer('solve2 too heavy?')
+	// Spoiler alert: yes it is
 	// 400 ms
 	// assert(solve2(test, 10), 178268300)
 	// 900 ms
@@ -436,7 +484,7 @@ let test = `
 	// assert(solve2(test, 12), 0)
 	// 16 seconds
 	// assert(solve2(test, 14), 0)
-	// still waiting
+	// still waiting...
 	// assert(solve2(test, 16), 0)
 }
 
