@@ -3,6 +3,7 @@ import input from './day21.txt'
 import {
 	adjacents,
 	assert,
+	fail,
 	gridFind,
 	gridGet,
 	gridIsWithin,
@@ -98,10 +99,10 @@ function onlyShortest(strs: string[]): string[] {
 
 	return shortests
 }
-function unplay(output: string): string[] {
-	let result1 = onlyShortest(unplay0(output))
-	let result2 = onlyShortest(result1.flatMap((x) => unplay1(x)))
-	let result3 = onlyShortest(result2.flatMap((x) => unplay2(x)))
+function unplayAll(output: string): string[] {
+	let result1 = onlyShortest(unplay0All(output))
+	let result2 = onlyShortest(result1.flatMap((x) => unplay1All(x)))
+	let result3 = onlyShortest(result2.flatMap((x) => unplay2All(x)))
 
 	return result3
 
@@ -211,7 +212,7 @@ function shortestPathsNumpad(a: string, b: string) {
 let lengths: Map<string, number[]> = new Map()
 
 // Return shortest paths that result in the given output
-function unplay1(output: string) {
+function unplay1All(output: string) {
 	let pairs = adjacents([...('A' + output)])
 
 	let result: string[] = ['']
@@ -225,9 +226,9 @@ function unplay1(output: string) {
 	return result
 }
 
-let unplay2 = unplay1
+let unplay2All = unplay1All
 
-function unplay0(output: string): string[] {
+function unplay0All(output: string): string[] {
 	let pairs = adjacents([...('B' + output)])
 
 	let result: string[] = ['']
@@ -235,6 +236,16 @@ function unplay0(output: string): string[] {
 		let shortests = shortestPathsNumpad(a, b)
 		shortests = shortests.map((x) => x + 'A')
 		result = combine(result, shortests)
+	}
+
+	return result
+}
+
+function unplay(output: string, iterations = 2): string {
+	let result = unplay0(output)
+
+	while (iterations--) {
+		result = unplay1(result)
 	}
 
 	return result
@@ -256,31 +267,143 @@ assert(
 	'v<<A>>^A<A>AvA<^AA>A<vAAA>^A'
 )
 assert(
-	unplay1('v<<A>>^A<A>AvA<^AA>A<vAAA>^A').includes(
+	unplay1All('v<<A>>^A<A>AvA<^AA>A<vAAA>^A').includes(
 		'<vA<AA>>^AvAA<^A>A<v<A>>^AvA^A<vA>^A<v<A>^A>AAvA^A<v<A>A>^AAAvA<^A>A'
 	)
 )
 assert(play1('<vA<AA>>^AvAA<^A>A'), 'v<<A>>^A')
-assert(unplay1('v<<A>>^A').includes('<vA<AA>>^AvAA<^A>A'))
+assert(unplay1All('v<<A>>^A').includes('<vA<AA>>^AvAA<^A>A'))
 
 assert(play1('v<<A>>^A'), '<A')
-assert(unplay1('<A').includes('v<<A>>^A'))
+assert(unplay1All('<A').includes('v<<A>>^A'))
 
 assert(play0('<A'), '0')
 log('ok')
 
 // log(unplay0('029B'))
-log(unplay('029B')[0].length)
+log(unplayAll('029B')[0].length)
 
 function solve(input: string) {
 	let codes = toLines(input.replaceAll('A', 'B'))
 	let result = 0
 	for (let code of codes) {
 		let num = parseInt(code)
-		let shortestPath = unplay(code)[0].length
+		let shortestPath = unplayAll(code)[0].length
 
 		log(code, shortestPath)
 		result += num * shortestPath
+	}
+
+	return result
+}
+
+// Part 2
+
+function goodness(path: string) {
+	let pairs = adjacents([...path])
+	let result = 0
+	for (let [a, b] of pairs) {
+		if (a === b) {
+			result += 1000000
+		}
+	}
+
+	for (let i = 0; i < path.length; i++) {
+		// Cheated by looking at:
+		// https://www.reddit.com/r/adventofcode/comments/1hj2odw/2024_day_21_solutions/
+		// All else being the same, prioritize moving < over ^ over v over >. I found this through trial and error.
+		if (path[i] === '<') {
+			result += (10 - i) * 1000
+		}
+		if (path[i] === '^') {
+			result += (10 - i) * 100
+		}
+		if (path[i] === 'v') {
+			result += (10 - i) * 10
+		}
+		if (path[i] === '>') {
+			result += (10 - i) * 1
+		}
+	}
+	return result
+}
+
+function pickOptimal(sequences: string[]) {
+	let sorted = sequences.sort((a, b) => goodness(b) - goodness(a))
+	return sorted[0]
+}
+
+assert(goodness('<<v'), 1019080)
+assert(goodness('<v<'), 18090)
+assert(goodness('<^') > goodness('^<'))
+assert(goodness('^v') > goodness('v^'))
+assert(goodness('v>') > goodness('>v'))
+assert(goodness('<<v') > goodness('v<<'))
+
+assert(pickOptimal(['<<v', '<v<', 'v<<']), '<<v')
+
+// Return the optimal solution
+function unplay0(output: string) {
+	let pairs = adjacents([...('B' + output)])
+
+	let result = ''
+
+	for (let [a, b] of pairs) {
+		let shortests = shortestPathsNumpad(a, b)
+		shortests = shortests.map((x) => x + 'A')
+		let shortest = pickOptimal(shortests)
+		result = result + shortest
+	}
+
+	return result
+}
+
+function unplay1(output: string) {
+	let pairs = adjacents([...('A' + output)])
+
+	let result = ''
+
+	for (let [a, b] of pairs) {
+		let shortests = shortestPaths(a, b)
+		shortests = shortests.map((x) => x + 'A')
+		let shortest = pickOptimal(shortests)
+		result = result + shortest
+	}
+
+	return result
+}
+
+let unplay2 = unplay1
+
+assert(unplay0('029B'), '<A^A^^>AvvvA')
+
+log('unplay', unplay1All('<A^A>^^AvvvA'))
+
+// assert(unplay1('<A'), '<<vA>>^A')
+
+// assert(unplay1('<A^A^^>AvvvA'), 'v<<A>>^A<A>AvA<^AA>A<vAAA>^Axx')
+// v<<A>>^A<A>A<AAv>A^A<vAAA^>A
+// v<<A>>^A<A>AvA<^AA>A<vAAA>^Axx
+
+function shortestFor(code: string, iterations = 2): string {
+	let result = unplay(code, iterations)
+	return result
+
+	// let result = unplayAll(code)
+	// log('shortestFor', code, result[0])
+	// return result[0].length
+}
+
+function solve2(input: string, iterations = 2) {
+	let codes = toLines(input.replaceAll('A', 'B'))
+
+	let result = 0
+	for (let code of codes) {
+		let num = parseInt(code)
+		let shortestPath = shortestFor(code, iterations)
+
+		log(code, shortestPath.length)
+		result += num * shortestPath.length
 	}
 
 	return result
@@ -299,6 +422,30 @@ let test = `
 }
 
 {
+	using perf = timer('solve2 test')
+	assert(solve2(test), 126384)
+}
+
+{
+	using perf = timer('solve2 too heavy?')
+	// 400 ms
+	// assert(solve2(test, 10), 178268300)
+	// 900 ms
+	// assert(solve2(test, 11), 0)
+	// 2500 ms
+	// assert(solve2(test, 12), 0)
+	// 16 seconds
+	// assert(solve2(test, 14), 0)
+	// still waiting
+	// assert(solve2(test, 16), 0)
+}
+
+{
 	using perf = timer('input')
 	assert(solve(input), 134120)
+}
+
+{
+	using perf = timer('solve2 input')
+	assert(solve2(input), 134120)
 }
