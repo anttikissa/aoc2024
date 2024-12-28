@@ -3,7 +3,7 @@ import input from './day21.txt'
 import {
 	adjacents,
 	assert,
-	fail,
+	cache,
 	gridFind,
 	gridGet,
 	gridIsWithin,
@@ -299,6 +299,8 @@ function solve(input: string) {
 
 // Part 2
 
+// let debug = false
+
 function goodness(path: string) {
 	let pairs = adjacents([...path])
 	let result = 0
@@ -374,23 +376,7 @@ function unplay1(output: string) {
 }
 
 assert(unplay0('029B'), '<A^A^^>AvvvA')
-
-// log('unplay', unplay1All('<A^A>^^AvvvA'))
-
-// assert(unplay1('<A'), '<<vA>>^A')
-
-// assert(unplay1('<A^A^^>AvvvA'), 'v<<A>>^A<A>AvA<^AA>A<vAAA>^Axx')
-// v<<A>>^A<A>A<AAv>A^A<vAAA^>A
-// v<<A>>^A<A>AvA<^AA>A<vAAA>^Axx
-
-function shortestFor(code: string, iterations = 2): string {
-	let result = unplay(code, iterations)
-	return result
-
-	// let result = unplayAll(code)
-	// log('shortestFor', code, result[0])
-	// return result[0].length
-}
+assert(unplay1('<A'), 'v<<A>>^A')
 
 // ATTEMPT to solve part 2 by generating the optimal sequence
 // Starts to take too much memory soon
@@ -400,7 +386,7 @@ function solve2(input: string, iterations = 2) {
 	let result = 0
 	for (let code of codes) {
 		let num = parseInt(code)
-		let shortestPath = shortestFor(code, iterations)
+		let shortestPath = unplay(code, iterations)
 
 		log(code, shortestPath.length)
 		result += num * shortestPath.length
@@ -411,45 +397,66 @@ function solve2(input: string, iterations = 2) {
 
 // Final? attempt to solve
 
-function unplay1length(output: string, iterations: number): number {
+function shortest(from: string, to: string): string {
+	let shortests = shortestPaths(from, to)
+	shortests = shortests.map((x) => x + 'A')
+	let shortest = pickOptimal(shortests)
+
+	return shortest
+}
+
+function unplay2(output: string, iterations = 2) {
+	if (iterations === 0) {
+		return output
+	}
+	let pairs = adjacents([...('A' + output)])
+
+	let acc = ''
+
+	for (let [a, b] of pairs) {
+		acc = acc + unplay2(shortest(a, b), iterations - 1)
+	}
+
+	return acc
+}
+
+let unplay3Length = (output: string, iterations: number) => {
 	if (iterations === 0) {
 		return output.length
 	}
-
 	let pairs = adjacents([...('A' + output)])
 
-	let result = 0
+	let accLength = 0
 
 	for (let [a, b] of pairs) {
-		// let shortests = shortestPaths(a, b)
-		// shortests = shortests.map((x) => x + 'A')
-		// let shortest = pickOptimal(shortests)
-		// TOOD call unplay1length recursively
-		// result = result + shortestLength
+		accLength = accLength + unplay3Length(shortest(a, b), iterations - 1)
 	}
 
-	return result
+	return accLength
 }
 
-function shortestFor3(code: string, iterations = 2) {
-	// TODO look at shortestFor, inline, make recursive, change to calculate length instead
-	// use unplay1length
-	return 0
-}
+unplay3Length = cache(unplay3Length)
 
-function solve3(input: string, iterations = 2) {
+let solve3 = (input: string, iterations = 2) => {
 	let codes = toLines(input.replaceAll('A', 'B'))
 
 	let result = 0
 	for (let code of codes) {
 		let num = parseInt(code)
-		let shortestPathLength = shortestFor3(code, iterations)
+
+		let shortest = unplay0(code)
+
+		// shortest = unplay2(shortest, iterations)
+		// let shortestPathLength = shortest.length
+		let shortestPathLength = unplay3Length(shortest, iterations)
 
 		result += num * shortestPathLength
 	}
 
 	return result
 }
+
+solve3 = cache(solve3)
 
 let test = `
 029A
@@ -474,6 +481,11 @@ let test = `
 }
 
 {
+	using perf = timer('solve3 test')
+	assert(solve3(test, 25), 154115708116294)
+}
+
+{
 	// using perf = timer('solve2 too heavy?')
 	// Spoiler alert: yes it is
 	// 400 ms
@@ -490,10 +502,17 @@ let test = `
 
 {
 	using perf = timer('input')
-	assert(solve(input), 134120)
+	// assert(solve(input), 134120)
 }
 
 {
 	using perf = timer('solve2 input')
 	assert(solve2(input), 134120)
 }
+
+{
+	using perf = timer('solve3 input')
+	assert(solve3(input, 25), 167389793580400)
+}
+
+log('ok')
