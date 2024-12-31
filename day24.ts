@@ -100,22 +100,22 @@ function solve(input: string) {
 	// log('gates', gates)
 
 	function simulate() {
-		let queue: [name: string, value: number][] = []
-
 		function setWire(name: string, value: number) {
-			log('setWire', name, value)
+			// log('setWire', name, value)
 			wires.set(name, value)
-			for (let gate of as.get(name) ?? []) {
+
+			function handleGate(gate: Gate) {
+				// log('setting gate', gate, { name, value })
 				let a = wires.get(gate.a)
 				if (typeof a !== 'number') {
-					// A seems to always be there
-					fail('no a')
+					// log(`wire a not yet set: ${gate.a}`)
+					return
 				}
 				let b = wires.get(gate.b)
 				if (typeof b !== 'number') {
-					// fail('no b')
-					queue.push([name, value])
-					continue
+					// log(`wire b not yet set: ${gate.b}`)
+					// queue.push([name, value])
+					return
 				}
 				let result!: number
 				switch (gate.op) {
@@ -133,12 +133,21 @@ function solve(input: string) {
 				}
 				setWire(gate.target, result)
 			}
+
+			let aGate = as.get(name)
+			if (aGate) {
+				for (let gate of aGate) {
+					handleGate(gate)
+				}
+			}
+			let bGate = bs.get(name)
+			if (bGate) {
+				for (let gate of bGate) {
+					handleGate(gate)
+				}
+			}
 		}
 		for (let [name, value] of wires) {
-			setWire(name, value)
-		}
-		while (queue.length) {
-			let [name, value] = queue.shift()!
 			setWire(name, value)
 		}
 	}
