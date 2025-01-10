@@ -282,11 +282,11 @@ function solve(input: string, part2 = false) {
 			if (38 <= i && i <= 38) {
 				function output(str: string) {
 					// console.log(str)
-					require('fs').appendFileSync(`file${i}.dot`, str + '\n')
+					// require('fs').appendFileSync(`file${i}.dot`, str + '\n')
 				}
 
 				log(`Printing graph ${i}. Clear file file${i}.dot`)
-				require('fs').writeFileSync(`file${i}.dot`, '')
+				// require('fs').writeFileSync(`file${i}.dot`, '')
 
 				function printNode(name: string) {
 					let gate = gatesByTarget.get(name)
